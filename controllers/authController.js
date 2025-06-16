@@ -17,6 +17,7 @@ const {
   verifyRefreshToken,
   revokeRefreshToken
 } = require('../models/authTokenModel');
+const ldap  = require('../config/ldap'); // เชื่อม LDAP client
 
 /* ---------- ฟังก์ชันช่วยสร้าง Access Token (อายุ 15 นาที) ---------- */
 function signAccessToken(user) {
@@ -87,6 +88,51 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: 'เกิดข้อผิดพลาดขณะเข้าสู่ระบบ' });
   }
 };
+
+/* ---------- เข้าสู่ระบบผ่าน LDAP / Active Directory ---------- */
+exports.ldapLogin = async (req, res) => {
+  const { username, password } = req.body;
+  // ตรวจว่ามีข้อมูลครบไหม
+  if (!username || !password) {
+    return res.status(400).json({ error: 'กรุณาใส่ username และ password' });
+  }
+
+  // เรียก authenticate ของ ldapauth-fork
+  ldap.authenticate(username, password, async (err, ldapUser) => {
+    if (err) {
+      console.error('LDAP authenticate error:', err);
+      return res.status(401).json({ error: 'LDAP: ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' });
+    }
+
+    // ldapUser คือข้อมูลผู้ใช้จาก AD เช่น { sAMAccountName, mail, cn, ... }
+    try {
+      // 1) ตรวจว่ามี user ใน DB local หรือยัง ถ้ายังไม่มีให้สร้าง
+      let user = await getUserByUsername(ldapUser.sAMAccountName);
+      if (!user) {
+        const newId = await createUser({
+          username:    ldapUser.sAMAccountName,
+          email:       ldapUser.mail || '',
+          password:    '',            // ไม่ใช้ bcrypt กับ LDAP
+          first_name:  ldapUser.givenName || '',
+          last_name:   ldapUser.sn        || '',
+          status:      'active'
+        });
+        user = { user_id: newId, username: ldapUser.sAMAccountName };
+      }
+
+      // 2) สร้าง Access + Refresh Token เช่นเดียวกับ login ปกติ
+      const accessToken  = signAccessToken(user);
+      const refreshToken = await createRefreshToken(user.user_id, 7);
+
+      // 3) ตอบกลับ client
+      res.json({ accessToken, refreshToken, user_id: user.user_id });
+    } catch (dbErr) {
+      console.error('DB error on LDAP login:', dbErr);
+      res.status(500).json({ error: 'เกิดข้อผิดพลาดภายในระบบ' });
+    }
+  });
+};
+
 
 /* ---------- ขอ Access Token ใหม่ (Refresh Token) ---------- */
 exports.refresh = async (req, res) => {
