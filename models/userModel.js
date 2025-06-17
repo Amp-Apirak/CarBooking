@@ -68,8 +68,37 @@ async function getUserById(userId) {
   return rows[0] || null;
 }
 
+/**
+ * อัปเดตข้อมูลผู้ใช้ (Sync AD) ตาม username (สอดคล้องกับ sAMAccountName)
+ * @param {string} username
+ * @param {object} adProfile  // ตัวอย่าง { email, first_name, last_name, phone, department }
+ */
+async function updateUserProfileByUsername(username, adProfile) {
+  const sql = `UPDATE users
+    SET email=?, first_name=?, last_name=?, phone=?, department_id=?
+    WHERE username=?`;
+  await db.query(sql, [
+    adProfile.email,
+    adProfile.first_name,
+    adProfile.last_name,
+    adProfile.phone,
+    adProfile.department, // สมมุติ mapping department_id จาก AD ตรงๆ หรือ custom
+    username
+  ]);
+
+  const params = [
+    adProfile.givenName,
+    adProfile.sn,
+    adProfile.mail,
+    username,
+  ];
+  await db.query(sql, params);
+}
+
+
 module.exports = {
   createUser,
   getUserByUsername,
-  getUserById
+  getUserById,
+  updateUserProfileByUsername
 };

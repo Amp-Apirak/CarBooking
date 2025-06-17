@@ -7,8 +7,9 @@ require('dotenv').config();           // โหลดตัวแปรจาก
 
 const express     = require('express');
 const morgan      = require('morgan');
-const cors        = require('cors');  // ← แก้ core ➜ cors
+const cors        = require('cors');  
 const bodyParser  = require('body-parser');
+const adRoutes = require('./routes/adRoutes');
 
 
 const db          = require('./config/db'); // เชื่อมต่อ MySQL (pool)
@@ -31,6 +32,7 @@ app.use(morgan('dev'));               // แสดง log request
 app.use(cors());                      // เปิด CORS ทุกโดเมน (ปรับให้เข้มขึ้นภายหลัง)
 app.use(bodyParser.json());           // รับ JSON body
 app.use(bodyParser.urlencoded({ extended: true })); // รับ form-urlencoded body
+app.use('/api/ad', adRoutes);         // เส้นทาง AD
 
 /* ---------- Routes ---------- */
 const authRoutes = require('./routes/authRoutes');
