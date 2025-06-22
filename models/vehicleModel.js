@@ -86,6 +86,23 @@ async function deleteVehicle(vehicleId) {
   await db.query(sql, [vehicleId]);
 }
 
+
+// ดึงรายการรถแบบมี pagination
+async function getVehiclesPaged(limit, offset) {
+  // 1) ดึงข้อมูลหลัก
+  const [rows] = await db.query(
+    `SELECT * FROM vehicles ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+    [limit, offset]
+  );
+
+  // 2) ดึง total count
+  const [[{ total }]] = await db.query(
+    `SELECT COUNT(*) AS total FROM vehicles`
+  );
+
+  return { rows, total };
+}
+
 // ---------------------------------  ประเภทยานพาหนะ ------------------------------------ //
 
 // ฟังก์ชันดึงรายการประเภทยานพาหนะทั้งหมด
@@ -174,4 +191,5 @@ module.exports = {
   deleteBrand,
   getVehicleTypeById,
   getVehicleBrandById,
+  getVehiclesPaged,
 };

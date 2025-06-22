@@ -17,6 +17,7 @@ const {
   createBrand,
   updateBrand,
   deleteBrand,
+  getVehiclesPaged,
 } = require('../models/vehicleModel');
 
 /**
@@ -25,8 +26,24 @@ const {
  */
 exports.list = async (req, res) => {
   try {
-    const vehicles = await getAllVehicles();
-    res.json(vehicles);
+    // อ่านจาก query string (default: limit=10, page=1)
+    const limit = parseInt(req.query.limit) || 10;
+    const page  = parseInt(req.query.page)  || 1;
+    const offset = (page - 1) * limit;
+
+    // เรียก model
+    const { rows, total } = await getVehiclesPaged(limit, offset);
+
+    // ตอบกลับพร้อม metadata
+    res.json({
+      data: rows,
+      pagination: {
+        total,          // จำนวนทั้งหมด
+        page,           // หน้า current
+        limit,          // per page
+        totalPages: Math.ceil(total / limit)
+      }
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'ไม่สามารถดึงรายการรถได้' });

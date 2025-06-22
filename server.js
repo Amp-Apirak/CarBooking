@@ -37,9 +37,14 @@ app.use("/api/ad", adRoutes); // เส้นทาง AD
 /* ---------- Routes ---------- */
 const authRoutes = require("./routes/authRoutes");
 const vehicleRoutes = require('./routes/vehicleRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
+const equipRoutes = require('./routes/bookingEquipmentRoutes');
+
 
 app.use("/api/auth", authRoutes); // เส้นทาง Auth ทั้งหมด
 app.use('/api/vehicles', vehicleRoutes); // เส้นทาง Vehicles
+app.use('/api/bookings', bookingRoutes); // เส้นทาง Bookings
+app.use('/api/bookings/:id/equipments', equipRoutes); // เส้นทาง Booking Equipments
 
 /* ---------- ทดสอบเส้นทาง root ---------- */
 app.get("/", async (req, res) => {
