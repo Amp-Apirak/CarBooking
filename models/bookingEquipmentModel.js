@@ -3,7 +3,7 @@ const db = require('../config/db');
 /** ดึงอุปกรณ์ทั้งหมดของ booking */
 async function listByBooking(bookingId) {
   const [rows] = await db.query(
-    `SELECT be.equipment_id, eq.name, be.quantity
+    `SELECT be.equipment_id, eq.equipment_name, be.quantity
      FROM booking_equipments AS be
      JOIN equipments AS eq ON be.equipment_id = eq.equipment_id
      WHERE be.booking_id = ?`,
