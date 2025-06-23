@@ -1,4 +1,11 @@
+// models/bookingEquipmentModel.js
+// ฟังก์ชันติดต่อฐานข้อมูลสำหรับตาราง booking_equipments
+
 const db = require('../config/db');
+
+// นำเข้าไลบรารี uuid เพื่อสร้าง uuid ใหม่เมื่อมีการเพิ่มข้อมูลใหม่
+// นำเข้า uuidv4 จากไลบรารี uuid เพื่อสร้าง uuid ใหม่เมื่อมีการเพิ่มข้อมูลใหม่
+const { v4: uuidv4 } = require('uuid');
 
 /** ดึงอุปกรณ์ทั้งหมดของ booking */
 async function listByBooking(bookingId) {
@@ -33,11 +40,10 @@ async function getById(bookingId, equipmentId) {
 
 /** เพิ่มอุปกรณ์ให้ booking */
 async function addEquipment(bookingId, equipmentId, quantity = 1) {
+  const booking_equipment_id = uuidv4().replace(/-/g, ''); // สร้าง uuid ใหม่เพื่อใช้ในการเพิ่มข้อมูลใหม่
   await db.query(
-    `INSERT INTO booking_equipments (booking_id, equipment_id, quantity)
-     VALUES (?, ?, ?)
-     ON DUPLICATE KEY UPDATE quantity = quantity + ?`,
-    [bookingId, equipmentId, quantity, quantity]
+    `INSERT INTO booking_equipments (booking_equipment_id, booking_id, equipment_id, quantity) VALUES (?, ?, ?, ?)`,
+    [booking_equipment_id, bookingId, equipmentId, quantity]
   );
 }
 
