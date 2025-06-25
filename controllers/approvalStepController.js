@@ -1,0 +1,53 @@
+// controllers/approvalStepController.js
+// ควบคุมการทำงานของ approval_steps
+
+const {
+  createStep,
+  getStepsByFlow,
+  deleteStepsByFlow,
+} = require("../models/approvalStepModel");
+
+/** เพิ่มขั้นตอนใหม่ใน flow */
+exports.createStep = async (req, res) => {
+  const { flow_id } = req.params;
+  const { step_order, role_id, step_name } = req.body;
+
+  if (!step_order || !role_id || !step_name) {
+    return res
+      .status(400)
+      .json({ error: "กรุณาระบุ step_order, role_id และ step_name" });
+  }
+
+  try {
+    const step_id = await createStep(flow_id, step_order, role_id, step_name);
+    res.status(201).json({ message: "เพิ่มขั้นตอนสำเร็จ", step_id });
+  } catch (err) {
+    res.status(500).json({ error: "เกิดข้อผิดพลาด", detail: err.message });
+  }
+};
+
+/** ดึงขั้นตอนทั้งหมดของ flow */
+exports.getStepsByFlow = async (req, res) => {
+  const { flow_id } = req.params;
+
+  try {
+    const steps = await getStepsByFlow(flow_id);
+    res.json(steps);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ error: "ไม่สามารถดึงขั้นตอนได้", detail: err.message });
+  }
+};
+
+/** ลบทุกขั้นของ flow (ใช้ตอนลบ flow) */
+exports.deleteStepsByFlow = async (req, res) => {
+  const { flow_id } = req.params;
+
+  try {
+    await deleteStepsByFlow(flow_id);
+    res.json({ message: "ลบขั้นตอนทั้งหมดของ flow แล้ว" });
+  } catch (err) {
+    res.status(500).json({ error: "เกิดข้อผิดพลาด", detail: err.message });
+  }
+};
