@@ -108,7 +108,10 @@ exports.remove = async (req, res) => {
 exports.approveBooking = async (req, res) => {
   const booking_id = req.params.id;
   const user_id = req.user?.user_id;
-  const { comment } = req.body;
+  const { comment } = req.body || {}; // fallback เพื่อป้องกัน crash
+  if (!comment) {
+    return res.status(400).json({ error: "กรุณาระบุ comment" });
+  }
 
   try {
     const booking = await getApprovalMeta(booking_id);

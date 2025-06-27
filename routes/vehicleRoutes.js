@@ -87,6 +87,7 @@ router.post("/types", ctrl.createType);
  *             properties:
  *               name:
  *                 type: string
+ *                 example: รถกระบะ
  *     responses:
  *       200:
  *         description: แก้ไขสำเร็จ
@@ -166,6 +167,8 @@ router.get("/brands/:id", ctrl.getBrandById);
  *                 type: string
  *                 example: Toyota
  *     responses:
+ *       201:
+ *         description: สำเร็จ
  */
 router.post("/brands", ctrl.createBrand);
 
@@ -237,6 +240,7 @@ router.delete("/brands/:id", ctrl.deleteBrand);
  *           type: string
  *           pattern: '^[a-f0-9]{32}$'
  *           example: '4a5464e929124739c30aa10330b6712'
+ *     description: ID ของรถ (UUID)
  *     responses:
  *       200:
  *         description: สำเร็จ
@@ -274,6 +278,31 @@ router.get("/", ctrl.list);
  *                 type: string
  *                 example: 1กก 1234
  *               type_id:
+ *                 type: string
+ *                 pattern: '^[a-f0-9]{32}$'
+ *                 example: '5fb512404a0011f08325fe6471b6f9ca'
+ *               brand_id:
+ *                 type: string
+ *                 pattern: '^[a-f0-9]{32}$'
+ *                 example: '5fb72f954a0011f08325fe6471b6f9ca'
+ *               capacity:
+ *                 type: integer
+ *                 example: 4
+ *               color:
+ *                 type: string
+ *                 example: แดง
+ *               description:
+ *                 type: string
+ *                 example: รถกระบะ CAB 2 แดง
+ *               image_path:
+ *                 type: string
+ *                 example: https://example.com/image.jpg
+ *               is_public:
+ *                 type: boolean
+ *                 example: true
+ *     responses:
+ *       201:
+ *         description: สำเร็จ
  */
 router.post("/", ctrl.create);
 
@@ -291,6 +320,7 @@ router.post("/", ctrl.create);
  *           type: string
  *           pattern: '^[a-f0-9]{32}$'
  *           example: '4a5464e929124739c30aa10330b6712'
+ *     description: ID ของรถ (UUID)
  *     requestBody:
  *       required: true
  *       content:
@@ -302,6 +332,31 @@ router.post("/", ctrl.create);
  *                 type: string
  *                 example: 1กก 1234
  *               type_id:
+ *                 type: string
+ *                 pattern: '^[a-f0-9]{32}$'
+ *                 example: '5fb512404a0011f08325fe6471b6f9ca'
+ *               brand_id:
+ *                 type: string
+ *                 pattern: '^[a-f0-9]{32}$'
+ *                 example: '5fb72f954a0011f08325fe6471b6f9ca'
+ *               capacity:
+ *                 type: integer
+ *                 example: 4
+ *               color:
+ *                 type: string
+ *                 example: แดง
+ *               description:
+ *                 type: string
+ *                 example: รถกระบะ CAB 2 แดง
+ *               image_path:
+ *                 type: string
+ *                 example: https://example.com/image.jpg
+ *               is_public:
+ *                 type: boolean
+ *                 example: true
+ *     responses:
+ *       200:
+ *         description: สำเร็จ
  */
 router.put("/:id", ctrl.update);
 
@@ -319,6 +374,7 @@ router.put("/:id", ctrl.update);
  *           type: string
  *           pattern: '^[a-f0-9]{32}$'
  *           example: '4a5464e929124739c30aa10330b6712'
+ *     description: ID ของรถ (UUID)
  *     responses:
  *       200:
  *         description: สำเร็จ

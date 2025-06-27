@@ -29,7 +29,7 @@ function signAccessToken(user) {
   return jwt.sign(
     { jti, user_id: user.user_id, username: user.username },
     process.env.JWT_SECRET,
-    { expiresIn: "15m" }
+    { expiresIn: "1d" }
   );
 }
 

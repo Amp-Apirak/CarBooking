@@ -106,11 +106,14 @@ async function getVehiclesPaged(limit, offset) {
 // ---------------------------------  ประเภทยานพาหนะ ------------------------------------ //
 
 // ฟังก์ชันดึงรายการประเภทยานพาหนะทั้งหมด
-async function getAllVehicleTypes() {
-  const sql = `SELECT * FROM vehicle_types`;
-  const [rows] = await db.query(sql);
-  return rows;
-}
+const getAllVehicleTypes = async (limit, offset) => {
+  const sql = `SELECT * FROM vehicle_types LIMIT ? OFFSET ?`;
+  const [rows] = await db.query(sql, [limit, offset]);
+  const [[{ total }]] = await db.query(
+    `SELECT COUNT(*) AS total FROM vehicle_types`
+  );
+  return { rows, total };
+};
 
 // ดึงรายการประเภทยานพาหนะตามไอดี
 async function getVehicleTypeById(typeId) {
@@ -142,11 +145,14 @@ async function deleteType(typeId) {
 // ---------------------------------  ยี่ห้อพาหนะ ------------------------------------ //
 
 // ฟังก์ชันดึงรายการยี่ห้อรถทั้งหมด
-async function getAllVehicleBrands() {
-  const sql = `SELECT * FROM vehicle_brands`;
-  const [rows] = await db.query(sql);
-  return rows;
-}
+const getAllVehicleBrands = async (limit, offset) => {
+  const sql = `SELECT * FROM vehicle_brands LIMIT ? OFFSET ?`;
+  const [rows] = await db.query(sql, [limit, offset]);
+  const [[{ total }]] = await db.query(
+    `SELECT COUNT(*) AS total FROM vehicle_brands`
+  );
+  return { rows, total };
+}; 
 
 // ดึงรายการยี่ห้อรถตามไอดี
 async function getVehicleBrandById(brandId) {
@@ -161,7 +167,8 @@ async function createBrand(name) {
   const sql = `INSERT INTO vehicle_brands (brand_id, name) VALUES (?, ?)`;
   await db.query(sql, [id, name]);
   return id;
-}
+};
+
 
 // แก้ไขยี่ห้อ
 async function updateBrand(brandId, name) {

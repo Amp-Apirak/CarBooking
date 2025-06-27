@@ -18,7 +18,7 @@ const {
   updateBrand,
   deleteBrand,
   getVehiclesPaged,
-} = require('../models/vehicleModel');
+} = require("../models/vehicleModel");
 
 /**
  * GET /api/vehicles
@@ -28,7 +28,7 @@ exports.list = async (req, res) => {
   try {
     // อ่านจาก query string (default: limit=10, page=1)
     const limit = parseInt(req.query.limit) || 10;
-    const page  = parseInt(req.query.page)  || 1;
+    const page = parseInt(req.query.page) || 1;
     const offset = (page - 1) * limit;
 
     // เรียก model
@@ -38,15 +38,15 @@ exports.list = async (req, res) => {
     res.json({
       data: rows,
       pagination: {
-        total,          // จำนวนทั้งหมด
-        page,           // หน้า current
-        limit,          // per page
-        totalPages: Math.ceil(total / limit)
-      }
+        total, // จำนวนทั้งหมด
+        page, // หน้า current
+        limit, // per page
+        totalPages: Math.ceil(total / limit),
+      },
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'ไม่สามารถดึงรายการรถได้' });
+    res.status(500).json({ error: "ไม่สามารถดึงรายการรถได้" });
   }
 };
 
@@ -58,12 +58,12 @@ exports.getById = async (req, res) => {
   try {
     const vehicle = await getVehicleById(req.params.id);
     if (!vehicle) {
-      return res.status(404).json({ error: 'ไม่พบรถที่ระบุ' });
+      return res.status(404).json({ error: "ไม่พบรถที่ระบุ" });
     }
     res.json(vehicle);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'เกิดข้อผิดพลาดขณะดึงข้อมูลรถ' });
+    res.status(500).json({ error: "เกิดข้อผิดพลาดขณะดึงข้อมูลรถ" });
   }
 };
 
@@ -77,7 +77,7 @@ exports.create = async (req, res) => {
     res.status(201).json({ vehicle_id: id });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'ไม่สามารถสร้างรถใหม่ได้' });
+    res.status(500).json({ error: "ไม่สามารถสร้างรถใหม่ได้" });
   }
 };
 
@@ -88,10 +88,10 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     await updateVehicle(req.params.id, req.body);
-    res.json({ message: 'อัปเดตรถเรียบร้อย' });
+    res.json({ message: "อัปเดตรถเรียบร้อย" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'ไม่สามารถอัปเดตรถได้' });
+    res.status(500).json({ error: "ไม่สามารถอัปเดตรถได้" });
   }
 };
 
@@ -102,13 +102,12 @@ exports.update = async (req, res) => {
 exports.remove = async (req, res) => {
   try {
     await deleteVehicle(req.params.id);
-    res.json({ message: 'ลบรถเรียบร้อย' });
+    res.json({ message: "ลบรถเรียบร้อย" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'ไม่สามารถลบรถได้' });
+    res.status(500).json({ error: "ไม่สามารถลบรถได้" });
   }
 };
- 
 
 // ---------------------------------  ประเภทยานพาหนะ ------------------------------------ //
 
@@ -118,10 +117,26 @@ exports.remove = async (req, res) => {
  */
 exports.listTypes = async (req, res) => {
   try {
-    const types = await getAllVehicleTypes();
-    res.json(types);
+    // อ่านจาก query string (default: limit=10, page=1)
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const offset = (page - 1) * limit;
+
+    // เรียก model
+    const { rows, total } = await getAllVehicleTypes(limit, offset);
+
+    // ตอบกลับพร้อม metadata
+    res.json({
+      data: rows,
+      pagination: {
+        total, // จำนวนทั้งหมด
+        page, // หน้า current
+        limit, // per page
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (err) {
-    res.status(500).json({ error: 'ไม่สามารถดึงประเภทยานพาหนะได้' });
+    res.status(500).json({ error: "ไม่สามารถดึงประเภทยานพาหนะได้" });
   }
 };
 
@@ -133,22 +148,21 @@ exports.getTypeById = async (req, res) => {
   try {
     const type = await getVehicleTypeById(req.params.id);
     if (!type) {
-      return res.status(404).json({ error: 'ไม่พบประเภท' });
+      return res.status(404).json({ error: "ไม่พบประเภท" });
     }
     res.json(type);
   } catch (err) {
-    res.status(500).json({ error: 'ไม่สามารถดึงประเภทยานพาหนะได้' });
+    res.status(500).json({ error: "ไม่สามารถดึงประเภทยานพาหนะได้" });
   }
 };
 
-
-// POST /api/vehicle/types 
+// POST /api/vehicle/types
 exports.createType = async (req, res) => {
   try {
     const id = await createType(req.body.name);
     res.status(201).json({ type_id: id });
   } catch (err) {
-    res.status(500).json({ error: 'ไม่สามารถสร้างประเภทยานพาหนะได้' });
+    res.status(500).json({ error: "ไม่สามารถสร้างประเภทยานพาหนะได้" });
   }
 };
 
@@ -156,9 +170,9 @@ exports.createType = async (req, res) => {
 exports.updateType = async (req, res) => {
   try {
     await updateType(req.params.id, req.body.name);
-    res.json({ message: 'แก้ไขประเภทยานพาหนะเรียบร้อย' });
+    res.json({ message: "แก้ไขประเภทยานพาหนะเรียบร้อย" });
   } catch (err) {
-    res.status(500).json({ error: 'ไม่สามารถแก้ไขประเภทยานพาหนะได้' });
+    res.status(500).json({ error: "ไม่สามารถแก้ไขประเภทยานพาหนะได้" });
   }
 };
 
@@ -166,13 +180,11 @@ exports.updateType = async (req, res) => {
 exports.deleteType = async (req, res) => {
   try {
     await deleteType(req.params.id);
-    res.json({ message: 'ลบประเภทยานพาหนะเรียบร้อย' });
+    res.json({ message: "ลบประเภทยานพาหนะเรียบร้อย" });
   } catch (err) {
-    res.status(500).json({ error: 'ไม่สามารถลบประเภทยานพาหนะได้' });
+    res.status(500).json({ error: "ไม่สามารถลบประเภทยานพาหนะได้" });
   }
 };
-
-
 
 // ---------------------------------  ยี่ห้อพาหนะ ------------------------------------ //
 
@@ -182,14 +194,29 @@ exports.deleteType = async (req, res) => {
  */
 exports.listBrands = async (req, res) => {
   try {
-    const brands = await getAllVehicleBrands();
-    res.json(brands);
+    // อ่านจาก query string (default: limit=10, page=1)
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const offset = (page - 1) * limit;
+
+    // เรียก model
+    const { rows, total } = await getAllVehicleBrands(limit, offset);
+
+    // ตอบกลับพร้อม metadata
+    res.json({
+      data: rows,
+      pagination: {
+        total, // จำนวน
+        page, // หน้า current
+        limit, // per page
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'ไม่สามารถดึงยี่ห้อรถได้' });
+    res.status(500).json({ error: "ไม่สามารถดึงยี่ห้อรถได้" });
   }
 };
-
 
 /**
  * POST /api/vehicle-types /:id
@@ -199,11 +226,11 @@ exports.getBrandById = async (req, res) => {
   try {
     const brand = await getVehicleBrandById(req.params.id);
     if (!brand) {
-      return res.status(404).json({ error: 'ไม่พบยี่ห้อ' });
+      return res.status(404).json({ error: "ไม่พบยี่ห้อ" });
     }
     res.json(brand);
   } catch (err) {
-    res.status(500).json({ error: 'ไม่สามารถดึงยี่ห้อได้' });
+    res.status(500).json({ error: "ไม่สามารถดึงยี่ห้อได้" });
   }
 };
 
@@ -213,7 +240,7 @@ exports.createBrand = async (req, res) => {
     const id = await createBrand(req.body.name);
     res.status(201).json({ brand_id: id });
   } catch (err) {
-    res.status(500).json({ error: 'ไม่สามารถสร้างยี่ห้อรถได้' });
+    res.status(500).json({ error: "ไม่สามารถสร้างยี่ห้อรถได้" });
   }
 };
 
@@ -221,9 +248,9 @@ exports.createBrand = async (req, res) => {
 exports.updateBrand = async (req, res) => {
   try {
     await updateBrand(req.params.id, req.body.name);
-    res.json({ message: 'แก้ไขยี่ห้อรถเรียบร้อย' });
+    res.json({ message: "แก้ไขยี่ห้อรถเรียบร้อย" });
   } catch (err) {
-    res.status(500).json({ error: 'ไม่สามารถแก้ไขยี่ห้อรถได้' });
+    res.status(500).json({ error: "ไม่สามารถแก้ไขยี่ห้อรถได้" });
   }
 };
 
@@ -231,9 +258,8 @@ exports.updateBrand = async (req, res) => {
 exports.deleteBrand = async (req, res) => {
   try {
     await deleteBrand(req.params.id);
-    res.json({ message: 'ลบยี่ห้อรถเรียบร้อย' });
+    res.json({ message: "ลบยี่ห้อรถเรียบร้อย" });
   } catch (err) {
-    res.status(500).json({ error: 'ไม่สามารถลบยี่ห้อรถได้' });
+    res.status(500).json({ error: "ไม่สามารถลบยี่ห้อรถได้" });
   }
 };
-
