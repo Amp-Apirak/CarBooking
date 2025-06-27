@@ -119,47 +119,6 @@ exports.ldapLogin = async (req, res) => {
 
     // ldapUser คือข้อมูลผู้ใช้จาก AD เช่น { sAMAccountName, mail, cn, ... }
     try {
-      // 1) ตรวจว่ามี user ใน DB local หรือยัง ถ้ายังไม่มีให้สร้าง
-      let user = await getUserByUsername(ldapUser.sAMAccountName);
-      if (!user) {
-        const newId = await createUser({
-          username: ldapUser.sAMAccountName,
-          email: ldapUser.mail || "",
-          password: "", // ไม่ใช้ bcrypt กับ LDAP
-          first_name: ldapUser.givenName || "",
-          last_name: ldapUser.sn || "",
-          status: "active",
-        });
-        user = { user_id: newId, username: ldapUser.sAMAccountName };
-      }
-
-      // 2) สร้าง Access + Refresh Token เช่นเดียวกับ login ปกติ
-      const accessToken = signAccessToken(user);
-      const refreshToken = await createRefreshToken(user.user_id, 7);
-
-      // 3) ตอบกลับ client
-      res.json({ accessToken, refreshToken, user_id: user.user_id });
-    } catch (dbErr) {
-      console.error("DB error on LDAP login:", dbErr);
-      res.status(500).json({ error: "เกิดข้อผิดพลาดภายในระบบ" });
-    }
-  });
-};
-
-exports.ldapLogin = async (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password) {
-    return res.status(400).json({ error: "กรุณาใส่ username และ password" });
-  }
-
-  // เชื่อมกับ AD
-  ldap.authenticate(username, password, async (err, ldapUser) => {
-    if (err) {
-      return res
-        .status(401)
-        .json({ error: "LDAP: ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
-    }
-    try {
       // เตรียม profile ข้อมูลที่ต้อง sync
       const adProfile = {
         username: ldapUser.sAMAccountName,
@@ -188,6 +147,7 @@ exports.ldapLogin = async (req, res) => {
       const refreshToken = await createRefreshToken(user.user_id, 7);
       res.json({ accessToken, refreshToken, user_id: user.user_id });
     } catch (dbErr) {
+      console.error("DB error on LDAP login:", dbErr);
       res.status(500).json({ error: "เกิดข้อผิดพลาดภายในระบบ" });
     }
   });
@@ -196,7 +156,7 @@ exports.ldapLogin = async (req, res) => {
 /* ---------- ขอ Access Token ใหม่ (Refresh Token) ---------- */
 exports.refresh = async (req, res) => {
   try {
-    const { refreshToken } = req.body;
+    const refreshToken = req.body?.refreshToken;
 
     // ตรวจสอบว่ามีการส่ง refresh token มาหรือไม่
     if (!refreshToken) {
@@ -226,27 +186,52 @@ exports.refresh = async (req, res) => {
 /* ---------- ออกจากระบบ (Logout) ---------- */
 exports.logout = async (req, res) => {
   try {
-    const { refreshToken } = req.body;
+    const refreshToken = req.body?.refreshToken; // ✅ ป้องกัน req.body undefined
 
-    // เพิกถอน Refresh Token (หากมีการส่งมาจาก Client)
+    console.log("Logout request received:", {
+      hasRefreshToken: !!refreshToken,
+      hasUser: !!req.user,
+      userJti: req.user?.jti,
+    });
+
+    // ✅ 1. เพิกถอน Refresh Token (ถ้ามี)
     if (refreshToken) {
-      const tokenData = await verifyRefreshToken(refreshToken);
-      if (tokenData) {
-        await revokeRefreshToken(tokenData.token_id);
+      try {
+        const tokenData = await verifyRefreshToken(refreshToken);
+        if (tokenData) {
+          await revokeRefreshToken(tokenData.token_id);
+          console.log("Refresh token ถูกเพิกถอนแล้ว");
+        } else {
+          console.log("ไม่พบ refresh token หรือหมดอายุแล้ว");
+        }
+      } catch (refreshErr) {
+        console.error("เกิดข้อผิดพลาดขณะเพิกถอน refresh token:", refreshErr);
       }
     }
 
-    // เพิ่ม Access Token ปัจจุบันลงใน jwt_blacklist เพื่อป้องกันการนำไปใช้ต่อ
-    await db.query(
-      `INSERT IGNORE INTO jwt_blacklist (jti, user_id, expired_at)
-       VALUES (?, ?, FROM_UNIXTIME(?))`,
-      [req.user.jti, req.user.user_id, req.user.exp]
-    );
+    // ✅ 2. เพิ่ม access token ที่ใช้อยู่ใน blacklist
+    if (req.user && req.user.jti && req.user.user_id && req.user.exp) {
+      try {
+        await db.query(
+          `INSERT IGNORE INTO jwt_blacklist (jti, user_id, expired_at)
+           VALUES (?, ?, FROM_UNIXTIME(?))`,
+          [req.user.jti, req.user.user_id, req.user.exp]
+        );
+        console.log("Access token ถูกเพิ่มใน blacklist");
+      } catch (blacklistErr) {
+        console.error(
+          "เกิดข้อผิดพลาดขณะเพิ่ม token ใน blacklist:",
+          blacklistErr
+        );
+      }
+    } else {
+      console.log("ไม่มี access token ที่สามารถ blacklist ได้");
+    }
 
-    // ส่งข้อความยืนยันว่าการ Logout สำเร็จ
+    // ✅ 3. ตอบกลับสำเร็จ
     res.json({ message: "ออกจากระบบเรียบร้อยแล้ว" });
   } catch (err) {
-    console.error(err);
+    console.error("Logout error:", err);
     res.status(500).json({ error: "เกิดข้อผิดพลาดในการออกจากระบบ" });
   }
 };
