@@ -19,7 +19,7 @@ const { createUser, getUserByUsername } = require('./models/userModel');
     province: 'Bangkok',
     postal_code: '10200',
     avatar_path: null,
-    department_id: '2e950612491a11f08b210242ac120002',
+    organization_id: '2e950612491a11f08b210242ac120002',
   });
   console.log('Created user_id:', newId);
 

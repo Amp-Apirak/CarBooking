@@ -1,10 +1,6 @@
+// controllers/authController.js
 /**
- * controllers/authController.js
- * ควบคุมการทำงาน Authentication ทั้งหมดของระบบ
- * - สมัครสมาชิก (register)
- * - เข้าสู่ระบบ (login)
- * - ขอ access token ใหม่ (refresh)
- * - ออกจากระบบ (logout)
+ * ควบคุม Authentication ทั้งหมด: register, login, ldapLogin, refresh, logout
  */
 
 const bcrypt = require("bcryptjs");
@@ -21,13 +17,13 @@ const {
   verifyRefreshToken,
   revokeRefreshToken,
 } = require("../models/authTokenModel");
-const ldap = require("../config/ldap"); // เชื่อม LDAP client
+const ldap = require("../config/ldap"); // LDAP client
 
-/* ---------- ฟังก์ชันช่วยสร้าง Access Token (อายุ 15 นาที) ---------- */
-function signAccessToken(user) {
-  const jti = uuidv4(); // ไว้ใช้สำหรับตรวจสอบใน jwt_blacklist
+/** สร้าง Access Token (1 วัน) พร้อม jti, user_id, username, organization_id */
+function signAccessToken({ user_id, username, organization_id }) {
+  const jti = uuidv4();
   return jwt.sign(
-    { jti, user_id: user.user_id, username: user.username },
+    { jti, user_id, username, organization_id },
     process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
@@ -36,36 +32,30 @@ function signAccessToken(user) {
 /* ---------- สมัครสมาชิกใหม่ (Register) ---------- */
 exports.register = async (req, res) => {
   try {
-    const { username, email, password, ...rest } = req.body;
+    // รับข้อมูลจาก body (ต้องมี organization_id ด้วย)
+    const { username, email, password, organization_id, ...rest } = req.body;
 
-    const existing = await getUserByUsername(username);
-    if (existing) {
-      return res
-        .status(400)
-        .json({ error: "มีผู้ใช้นี้ในระบบแล้ว (อาจสร้างจาก AD หรือสมัครเอง)" });
-    }
-
-    // ตรวจสอบว่ามีชื่อผู้ใช้นี้อยู่ในระบบหรือไม่
+    // ตรวจ username ซ้ำ
     if (await getUserByUsername(username)) {
       return res.status(400).json({ error: "ชื่อผู้ใช้นี้ถูกใช้ไปแล้ว" });
     }
 
-    // เข้ารหัสรหัสผ่านด้วย bcrypt
+    // เข้ารหัส password
     const hash = await bcrypt.hash(password, 10);
 
-    // สร้าง user ใหม่ลงในฐานข้อมูล
+    // สร้าง user ใหม่
     const user_id = await createUser({
       username,
       email,
       password: hash,
+      organization_id,   // บันทึก org_id ลง DB
       ...rest,
     });
 
-    // สร้าง Access Token และ Refresh Token
-    const accessToken = signAccessToken({ user_id, username });
-    const refreshToken = await createRefreshToken(user_id, 7); // 7 วัน
+    // สร้าง tokens
+    const accessToken  = signAccessToken({ user_id, username, organization_id });
+    const refreshToken = await createRefreshToken(user_id, 7);
 
-    // ส่ง Token และข้อมูล user กลับไปที่ Client
     res.json({ accessToken, refreshToken, user_id });
   } catch (err) {
     console.error(err);
@@ -78,21 +68,16 @@ exports.login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    // ดึงข้อมูลผู้ใช้งานจากชื่อผู้ใช้ (username)
+    // ดึง user พร้อม organization_id
     const user = await getUserByUsername(username);
-
-    // ตรวจสอบความถูกต้องของ username/password
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      return res
-        .status(401)
-        .json({ error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
+      return res.status(401).json({ error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
     }
 
-    // สร้าง Access Token และ Refresh Token
-    const accessToken = signAccessToken(user);
-    const refreshToken = await createRefreshToken(user.user_id, 7); // 7 วัน
+    // สร้าง tokens ใส่ org_id ลง payload
+    const accessToken  = signAccessToken(user);
+    const refreshToken = await createRefreshToken(user.user_id, 7);
 
-    // ส่ง Token กลับไปที่ Client
     res.json({ accessToken, refreshToken });
   } catch (err) {
     console.error(err);
@@ -103,47 +88,41 @@ exports.login = async (req, res) => {
 /* ---------- เข้าสู่ระบบผ่าน LDAP / Active Directory ---------- */
 exports.ldapLogin = async (req, res) => {
   const { username, password } = req.body;
-  // ตรวจว่ามีข้อมูลครบไหม
   if (!username || !password) {
     return res.status(400).json({ error: "กรุณาใส่ username และ password" });
   }
 
-  // เรียก authenticate ของ ldapauth-fork
   ldap.authenticate(username, password, async (err, ldapUser) => {
     if (err) {
       console.error("LDAP authenticate error:", err);
-      return res
-        .status(401)
-        .json({ error: "LDAP: ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
+      return res.status(401).json({ error: "LDAP: ชื่อหรือรหัสผ่านไม่ถูกต้อง" });
     }
 
-    // ldapUser คือข้อมูลผู้ใช้จาก AD เช่น { sAMAccountName, mail, cn, ... }
-    try {
-      // เตรียม profile ข้อมูลที่ต้อง sync
-      const adProfile = {
-        username: ldapUser.sAMAccountName,
-        email: ldapUser.mail || "",
-        first_name: ldapUser.givenName || "",
-        last_name: ldapUser.sn || "",
-        phone: ldapUser.telephoneNumber || "",
-        department: ldapUser.department || "", // หรือ map ตรงกับ id ในระบบ
-        status: "active",
-      };
+    // เตรียม profile จาก AD
+    const adProfile = {
+      username:           ldapUser.sAMAccountName,
+      email:              ldapUser.mail || "",
+      first_name:         ldapUser.givenName || "",
+      last_name:          ldapUser.sn || "",
+      phone:              ldapUser.telephoneNumber || "",
+      organization_id:    ldapUser.departmentId || "", // *ต้องแมป department → org_id*
+      status:             "active",
+    };
 
-      // ป้องกัน user ซ้ำ (อัปเดตทับ ไม่สร้าง record ใหม่ถ้ามีอยู่แล้ว)
+    try {
+      // หา หรือสร้าง user ใหม่
       let user = await getUserByUsername(adProfile.username);
       if (!user) {
-        // insert user ใหม่ถ้าไม่เจอ
         const newId = await createUser({ ...adProfile, password: "" });
-        user = { user_id: newId, username: adProfile.username };
+        user = { user_id: newId, ...adProfile };
       } else {
-        // update field จาก AD ทุกครั้งที่ login
         await updateUserProfileByUsername(adProfile.username, adProfile);
-        user = { user_id: user.user_id, username: adProfile.username };
+        // เติม organization_id จาก DB (ในกรณี departmentId ไม่ตรง)
+        user.organization_id = user.organization_id;
       }
 
-      // ส่ง JWT + refresh กลับ
-      const accessToken = signAccessToken(user);
+      // สร้าง tokens
+      const accessToken  = signAccessToken(user);
       const refreshToken = await createRefreshToken(user.user_id, 7);
       res.json({ accessToken, refreshToken, user_id: user.user_id });
     } catch (dbErr) {
@@ -157,24 +136,29 @@ exports.ldapLogin = async (req, res) => {
 exports.refresh = async (req, res) => {
   try {
     const refreshToken = req.body?.refreshToken;
-
-    // ตรวจสอบว่ามีการส่ง refresh token มาหรือไม่
     if (!refreshToken) {
-      return res.status(400).json({ error: "กรุณาแนบ Refresh Token มาด้วย" });
+      return res.status(400).json({ error: "กรุณาแนบ Refresh Token มา" });
     }
 
-    // ตรวจสอบความถูกต้องของ refresh token
     const tokenData = await verifyRefreshToken(refreshToken);
     if (!tokenData) {
-      return res
-        .status(401)
-        .json({ error: "Refresh Token ไม่ถูกต้องหรือหมดอายุ" });
+      return res.status(401).json({ error: "Refresh Token ไม่ถูกต้องหรือหมดอายุ" });
     }
 
-    // สร้าง Access Token ใหม่ส่งกลับไปให้ Client
+    // ดึงข้อมูล user ใหม่ เพื่อเอา organization_id
+    const [[userRow]] = await db.query(
+      "SELECT username, organization_id FROM users WHERE user_id = ? LIMIT 1",
+      [tokenData.user_id]
+    );
+    if (!userRow) {
+      return res.status(404).json({ error: "ไม่พบข้อมูลผู้ใช้" });
+    }
+
+    // สร้าง Access Token ใหม่
     const accessToken = signAccessToken({
-      user_id: tokenData.user_id,
-      username: "",
+      user_id:         tokenData.user_id,
+      username:        userRow.username,
+      organization_id: userRow.organization_id,
     });
     res.json({ accessToken });
   } catch (err) {
@@ -186,49 +170,27 @@ exports.refresh = async (req, res) => {
 /* ---------- ออกจากระบบ (Logout) ---------- */
 exports.logout = async (req, res) => {
   try {
-    const refreshToken = req.body?.refreshToken; // ✅ ป้องกัน req.body undefined
+    const refreshToken = req.body?.refreshToken;
 
-    console.log("Logout request received:", {
-      hasRefreshToken: !!refreshToken,
-      hasUser: !!req.user,
-      userJti: req.user?.jti,
-    });
-
-    // ✅ 1. เพิกถอน Refresh Token (ถ้ามี)
+    // เพิกถอน Refresh Token
     if (refreshToken) {
       try {
         const tokenData = await verifyRefreshToken(refreshToken);
         if (tokenData) {
           await revokeRefreshToken(tokenData.token_id);
-          console.log("Refresh token ถูกเพิกถอนแล้ว");
-        } else {
-          console.log("ไม่พบ refresh token หรือหมดอายุแล้ว");
         }
-      } catch (refreshErr) {
-        console.error("เกิดข้อผิดพลาดขณะเพิกถอน refresh token:", refreshErr);
-      }
+      } catch {/* ignore */}
     }
 
-    // ✅ 2. เพิ่ม access token ที่ใช้อยู่ใน blacklist
-    if (req.user && req.user.jti && req.user.user_id && req.user.exp) {
-      try {
-        await db.query(
-          `INSERT IGNORE INTO jwt_blacklist (jti, user_id, expired_at)
-           VALUES (?, ?, FROM_UNIXTIME(?))`,
-          [req.user.jti, req.user.user_id, req.user.exp]
-        );
-        console.log("Access token ถูกเพิ่มใน blacklist");
-      } catch (blacklistErr) {
-        console.error(
-          "เกิดข้อผิดพลาดขณะเพิ่ม token ใน blacklist:",
-          blacklistErr
-        );
-      }
-    } else {
-      console.log("ไม่มี access token ที่สามารถ blacklist ได้");
+    // ใส่ Access Token ปัจจุบันลง blacklist
+    if (req.user?.jti && req.user?.user_id && req.user?.exp) {
+      await db.query(
+        `INSERT IGNORE INTO jwt_blacklist (jti,user_id,expired_at)
+         VALUES(?, ?, FROM_UNIXTIME(?))`,
+        [req.user.jti, req.user.user_id, req.user.exp]
+      );
     }
 
-    // ✅ 3. ตอบกลับสำเร็จ
     res.json({ message: "ออกจากระบบเรียบร้อยแล้ว" });
   } catch (err) {
     console.error("Logout error:", err);

@@ -38,22 +38,26 @@ const authRoutes = require("./routes/authRoutes");
 const vehicleRoutes = require("./routes/vehicleRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 const equipRoutes = require("./routes/bookingEquipmentRoutes");
+const equipmentRoutes = require("./routes/equipmentRoutes");
 const approvalFlowRoutes = require("./routes/approvalFlowRoutes.js");
 const approvalStepRoutes = require("./routes/approvalStepRoutes.js");
 const roleRoutes = require("./routes/roleRoutes");
 const permissionRoutes = require("./routes/permissionRoutes");
 const rolePermissionRoutes = require("./routes/rolePermissionRoutes");
+const organizationRoutes = require('./routes/organizationRoutes');
 
 app.use("/api/ad", adRoutes); // เส้นทาง AD
 app.use("/api/auth", authRoutes); // เส้นทาง Auth ทั้งหมด
 app.use("/api/vehicles", vehicleRoutes); // เส้นทาง Vehicles
 app.use("/api/bookings", bookingRoutes); // เส้นทาง Bookings
 app.use("/api/bookings/:id/equipments", equipRoutes); // เส้นทาง Booking Equipments
+app.use("/api/equipments", equipmentRoutes); // เส้นทาง Equipments
 app.use("/api/approval-flows", approvalFlowRoutes); // เส้นทาง Approval Flows
 app.use("/api/approval-flows", approvalStepRoutes); // เส้นทาง Approval Steps
 app.use("/api/roles", roleRoutes);
 app.use("/api/permissions", permissionRoutes);
 app.use("/api/role-permissions", rolePermissionRoutes);
+app.use("/api/organizations", organizationRoutes); // เส้นทาง Organizations
 app.use(express.json());
 
 /* ---------- ทดสอบเส้นทาง root ---------- */

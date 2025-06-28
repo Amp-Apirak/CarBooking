@@ -1,28 +1,31 @@
 const {
-  listByBooking,
-  getPaged,
+  getBookingsPaged,
   getById,
   addEquipment,
   updateEquipment,
   removeEquipment,
-  countAll,
 } = require("../models/bookingEquipmentModel");
 
 exports.getAll = async (req, res) => {
-  const bookingId = req.params.id;
-  const items = await listByBooking(bookingId);
-  res.json(items);
-};
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const offset = (page - 1) * limit;
 
-exports.getPaged = async (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const data = await getPaged(page, limit);
-  const total = await countAll();
-  res.json({
-    data,
-    pagination: { page, limit, totalPages: Math.ceil(total / limit) },
-  });
+    const { rows, total } = await getBookingsPaged(limit, offset);
+    res.json({
+      data: rows,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (err) {
+    console.error("Error in GET /bookings/:id/equipments:", err);
+    res.status(500).json({ error: "ไม่สามารถดึงรายการอุปกรณ์เสริมได้" });
+  }
 };
 
 exports.getById = async (req, res) => {

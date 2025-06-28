@@ -12,29 +12,48 @@ const {
 
 /** สร้าง Flow ใหม่ */
 exports.createFlow = async (req, res) => {
-  const { flow_name } = req.body;
+  const { flow_name, flow_description } = req.body;
 
-  if (!flow_name) {
-    return res.status(400).json({ error: "กรุณาระบุชื่อ Flow" });
+  if (!flow_name || !flow_description) {
+    return res.status(400).json({ error: "กรุณาระบุชื่อและคำอธิบาย Flow" });
   }
 
   try {
-    const flow_id = await createFlow(flow_name);
+    const flow_id = await createFlow(flow_name, flow_description);
     res.status(201).json({ message: "สร้าง Flow สำเร็จ", flow_id });
   } catch (err) {
     res.status(500).json({ error: "เกิดข้อผิดพลาด", detail: err.message });
   }
 };
 
-/** ดึง Flow ทั้งหมด */
+/** ดึง Flow ทั้งหมด และ Page */
 exports.getAllFlows = async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+  const offset = (page - 1) * limit;
+
   try {
-    const flows = await getAllFlows();
-    res.json(flows);
+    const { rows, total } = await getAllFlows(limit, offset);
+    const totalPages = Math.ceil(total / limit);
+    res.json({ rows, total, totalPages });
   } catch (err) {
-    res
-      .status(500)
-      .json({ error: "ไม่สามารถดึงข้อมูล Flow ได้", detail: err.message });
+    res.status(500).json({ error: "เกิดข้อผิดพลาด", detail: err.message });
+  }
+};
+
+/** แก้ไข Flow */
+exports.updateFlow = async (req, res) => {
+  const { id } = req.params;
+  const { flow_name, flow_description } = req.body;
+
+  if (!flow_name || !flow_description) {
+    return res.status(400).json({ error: "กรุณาระบุชื่อและคำอธิบาย Flow" });
+  }
+
+  try {
+    await updateFlow(id, flow_name, flow_description);
+    res.json({ message: "แก้ไขข้อมูล Flow แล้ว" });
+  } catch (err) {
+    res.status(500).json({ error: "เกิดข้อผิดพลาด", detail: err.message });
   }
 };
 

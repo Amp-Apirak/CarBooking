@@ -6,6 +6,17 @@ const ctrl = require("../controllers/vehicleController");
 
 router.use(auth);
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Vehicles
+ *     description: ระบบจัดการยานพาหนะ
+ *   - name: Vehicle Types
+ *     description: ระบบจัดการประเภทยานพาหนะ
+ *   - name: Vehicle Brands
+ *     description: ระบบจัดการยี่ห้อยานพาหนะ
+ */
+
 // ------------------------------------ Vehicle Types --------------------------------------
 
 /**

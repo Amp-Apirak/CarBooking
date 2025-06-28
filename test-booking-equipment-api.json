@@ -1,0 +1,158 @@
+{
+  "info": {
+    "name": "Car Booking Equipment API Tests",
+    "description": "ตัวอย่างการทดสอบ API สำหรับการจัดการอุปกรณ์ในการจองรถ",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "token": "YOUR_JWT_TOKEN_HERE"
+  },
+  "variables": {
+    "baseUrl": "http://localhost:3000/api",
+    "bookingId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "equipmentId": "a1e1f3c1c2d14f6aa7b5407f0410d1a1"
+  },
+  "tests": [
+    {
+      "name": "1. Login to get JWT Token",
+      "method": "POST",
+      "url": "{{baseUrl}}/auth/login",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "username": "admin",
+        "password": "admin123"
+      },
+      "description": "เข้าสู่ระบบเพื่อรับ JWT Token สำหรับการยืนยันตัวตน"
+    },
+    {
+      "name": "2. Get All Bookings",
+      "method": "GET",
+      "url": "{{baseUrl}}/bookings",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "description": "ดึงรายการการจองทั้งหมดเพื่อหา booking_id ที่ต้องการทดสอบ"
+    },
+    {
+      "name": "3. Get Available Equipments",
+      "method": "GET",
+      "url": "{{baseUrl}}/equipments",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "description": "ดึงรายการอุปกรณ์ที่มีในระบบ (พร้อม pagination)"
+    },
+    {
+      "name": "3.1. Get All Equipments (No Pagination)",
+      "method": "GET",
+      "url": "{{baseUrl}}/equipments/all",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "description": "ดึงรายการอุปกรณ์ทั้งหมด (สำหรับ dropdown)"
+    },
+    {
+      "name": "3.2. Search Equipments",
+      "method": "GET",
+      "url": "{{baseUrl}}/equipments?search=GPS",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "description": "ค้นหาอุปกรณ์ตามชื่อหรือคำอธิบาย"
+    },
+    {
+      "name": "4. Get Booking Equipment List",
+      "method": "GET",
+      "url": "{{baseUrl}}/bookings/{{bookingId}}/equipments",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "description": "ดึงรายการอุปกรณ์ที่เชื่อมโยงกับการจองนี้"
+    },
+    {
+      "name": "5. Add Equipment to Booking",
+      "method": "POST",
+      "url": "{{baseUrl}}/bookings/{{bookingId}}/equipments",
+      "headers": {
+        "Authorization": "Bearer {{token}}",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "equipment_id": "{{equipmentId}}",
+        "quantity": 2
+      },
+      "description": "เพิ่มอุปกรณ์ให้กับการจอง โดยระบุ equipment_id และจำนวน"
+    },
+    {
+      "name": "6. Get Specific Equipment in Booking",
+      "method": "GET",
+      "url": "{{baseUrl}}/bookings/{{bookingId}}/equipments/{{equipmentId}}",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "description": "ดึงข้อมูลอุปกรณ์เฉพาะในการจอง"
+    },
+    {
+      "name": "7. Update Equipment Quantity",
+      "method": "PUT",
+      "url": "{{baseUrl}}/bookings/{{bookingId}}/equipments/{{equipmentId}}",
+      "headers": {
+        "Authorization": "Bearer {{token}}",
+        "Content-Type": "application/json"
+      },
+      "body": {
+        "quantity": 3
+      },
+      "description": "อัปเดตจำนวนอุปกรณ์ในการจอง"
+    },
+    {
+      "name": "8. Remove Equipment from Booking",
+      "method": "DELETE",
+      "url": "{{baseUrl}}/bookings/{{bookingId}}/equipments/{{equipmentId}}",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "description": "ลบอุปกรณ์ออกจากการจอง"
+    }
+  ],
+  "curl_examples": {
+    "login": "curl -X POST http://localhost:3000/api/auth/login -H \"Content-Type: application/json\" -d '{\"username\":\"admin\",\"password\":\"admin123\"}'",
+    "get_bookings": "curl -X GET http://localhost:3000/api/bookings -H \"Authorization: Bearer YOUR_JWT_TOKEN\"",
+    "get_equipments": "curl -X GET http://localhost:3000/api/equipments -H \"Authorization: Bearer YOUR_JWT_TOKEN\"",
+    "get_equipments_all": "curl -X GET http://localhost:3000/api/equipments/all -H \"Authorization: Bearer YOUR_JWT_TOKEN\"",
+    "search_equipments": "curl -X GET \"http://localhost:3000/api/equipments?search=GPS\" -H \"Authorization: Bearer YOUR_JWT_TOKEN\"",
+    "get_booking_equipments": "curl -X GET http://localhost:3000/api/bookings/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/equipments -H \"Authorization: Bearer YOUR_JWT_TOKEN\"",
+    "add_equipment": "curl -X POST http://localhost:3000/api/bookings/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/equipments -H \"Authorization: Bearer YOUR_JWT_TOKEN\" -H \"Content-Type: application/json\" -d '{\"equipment_id\":\"a1e1f3c1c2d14f6aa7b5407f0410d1a1\",\"quantity\":2}'",
+    "update_equipment": "curl -X PUT http://localhost:3000/api/bookings/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/equipments/a1e1f3c1c2d14f6aa7b5407f0410d1a1 -H \"Authorization: Bearer YOUR_JWT_TOKEN\" -H \"Content-Type: application/json\" -d '{\"quantity\":3}'",
+    "delete_equipment": "curl -X DELETE http://localhost:3000/api/bookings/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/equipments/a1e1f3c1c2d14f6aa7b5407f0410d1a1 -H \"Authorization: Bearer YOUR_JWT_TOKEN\""
+  },
+  "sample_data": {
+    "available_equipments": [
+      {
+        "equipment_id": "a1e1f3c1c2d14f6aa7b5407f0410d1a1",
+        "equipment_name": "วิทยุสื่อสาร",
+        "description": "ใช้สื่อสารระหว่างรถ"
+      },
+      {
+        "equipment_id": "b2f2e4d2d3e24f7bb8c6518f1521e2b2",
+        "equipment_name": "GPS Navigator",
+        "description": "นำทางด้วยระบบดาวเทียม"
+      },
+      {
+        "equipment_id": "c3g3g5e3e4f34g8cc9d7629g2632f3c3",
+        "equipment_name": "กล้องติดรถยนต์",
+        "description": "บันทึกภาพขณะขับขี่"
+      }
+    ],
+    "booking_equipment_response": {
+      "booking_equipment_id": "generated_uuid",
+      "booking_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "equipment_id": "a1e1f3c1c2d14f6aa7b5407f0410d1a1",
+      "quantity": 2,
+      "created_at": "2025-06-28T10:00:00.000Z"
+    }
+  }
+}

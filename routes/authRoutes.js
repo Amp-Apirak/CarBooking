@@ -1,8 +1,8 @@
+// routes/authRoutes.js
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const db = require("../config/db");
 const router = express.Router();
-const auth = require("../middleware/authMiddleware");
 const {
   login,
   register,
@@ -10,6 +10,13 @@ const {
   logout,
   ldapLogin,
 } = require("../controllers/authController");
+
+/**
+ * @swagger
+ * tags:
+ *   name: Auth
+ *   description: ระบบการล็อกอินและสมัครสมาชิก
+ */
 
 /**
  * @swagger
@@ -26,10 +33,13 @@ const {
  *             properties:
  *               username:
  *                 type: string
- *                 example: newuser
+ *                 example: admin
  *               password:
  *                 type: string
  *                 example: 123456
+ *               organization_id:
+ *                 type: string
+ *                 example: 2e950612491a11f08b210242ac120002
  *     responses:
  *       200:
  *         description: ล็อกอินสำเร็จ
@@ -61,6 +71,9 @@ router.post("/login", login);
  *               password:
  *                 type: string
  *                 example: 123456
+ *               organization_id:
+ *                 type: string
+ *                 example: 2e950612491a11f08b210242ac120002
  *     responses:
  *       201:
  *         description: สมัครสมาชิกสำเร็จ
@@ -89,6 +102,9 @@ router.post("/register", register);
  *               password:
  *                 type: string
  *                 example: your_password
+ *               organization_id:
+ *                 type: string
+ *                 example: 2e950612491a11f08b210242ac120002
  *     responses:
  *       200:
  *         description: ล็อกอินผ่าน LDAP สำเร็จ

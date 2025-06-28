@@ -7,26 +7,17 @@ const db = require('../config/db');
 // นำเข้า uuidv4 จากไลบรารี uuid เพื่อสร้าง uuid ใหม่เมื่อมีการเพิ่มข้อมูลใหม่
 const { v4: uuidv4 } = require('uuid');
 
-/** ดึงอุปกรณ์ทั้งหมดของ booking */
-async function listByBooking(bookingId) {
-  const [rows] = await db.query(
-    `SELECT be.equipment_id, eq.equipment_name, be.quantity
-     FROM booking_equipments AS be
-     JOIN equipments AS eq ON be.equipment_id = eq.equipment_id
-     WHERE be.booking_id = ?`,
-    [bookingId]
-  );
-  return rows;
-}
 
-/** ดึงรายการ booking_equipments ทั้งหมด แบบ paged */
-async function getPaged(page = 1, limit = 10) {
-  const offset = (page - 1) * limit;
+/** ดึงรายการ booking_equipments พร้อม pagination */
+async function getBookingsPaged(limit, offset) {
   const [rows] = await db.query(
-    `SELECT * FROM booking_equipments ORDER BY booking_id DESC LIMIT ? OFFSET ?`,
+    `SELECT * FROM booking_equipments ORDER BY created_at DESC LIMIT ? OFFSET ?`,
     [limit, offset]
   );
-  return rows;
+  const [[{ total }]] = await db.query(
+    `SELECT COUNT(*) AS total FROM booking_equipments`
+  );
+  return { rows, total };
 }
 
 /** ดึงรายการ booking_equipments ตาม id ทั้งคู่ */
@@ -72,11 +63,9 @@ async function countAll() {
 }
 
 module.exports = {
-  listByBooking,
-  getPaged,
+  getBookingsPaged,
   getById,
   addEquipment,
   updateEquipment,
-  removeEquipment,
-  countAll
+  removeEquipment
 };
