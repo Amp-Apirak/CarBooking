@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 28, 2025 at 06:19 PM
+-- Generation Time: Jun 29, 2025 at 06:43 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -266,6 +266,7 @@ INSERT INTO `refresh_tokens` (`token_id`, `user_id`, `token_hash`, `expired_at`,
 ('bd2c77bd-cf27-4ff6-9bb8-f400843d99da', 'aadaec379b964a44ac33896816f752ad', 'fe2e99d428ea85aaed75e903143024aec2c8a4edb848f0cffc735b20ca2c9c72', '2025-07-05 16:14:22', NULL, '2025-06-28 16:14:22'),
 ('cb65206b-5bea-4c78-ae69-0d5e737e4b89', '5ed0cce547ea4898aca5ee633449c2fb', 'c6532139a289aca1874014f59641d187abc3282c09e5ef672583db10739fb994', '2025-07-05 16:13:17', NULL, '2025-06-28 16:13:17'),
 ('e10479fa-7a0f-4609-b5b1-d1e2298a8fa0', '3699f1ea64684ac78b02afd1fb9b3cdd', 'b528c6f1fc385464c80998cdf67223301e4bf20f3c398b52f2ec439d750e57c7', '2025-07-05 16:14:02', NULL, '2025-06-28 16:14:02'),
+('eef46306-bc9d-437c-852c-cfc2a8cfb6cc', '036354d67ec34f9eb28cd26c8b2ec26e', '30e4734af342c5ba261b12bc6b09f511eeace0b11eaf964d22671d5e115929fc', '2025-07-06 03:48:23', NULL, '2025-06-29 03:48:23'),
 ('f3bac213-8f21-4028-bfc6-37fb7dd27193', '036354d67ec34f9eb28cd26c8b2ec26e', '1486bdc2552858bde5b349ec323394217393795ff55c12d149014e4badfb1404', '2025-07-05 15:43:14', NULL, '2025-06-28 15:43:14');
 
 -- --------------------------------------------------------
@@ -402,6 +403,14 @@ CREATE TABLE `vehicles` (
   `created_at` timestamp NULL DEFAULT current_timestamp() COMMENT 'วันที่เพิ่มข้อมูลรถ'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลยานพาหนะ';
 
+--
+-- Dumping data for table `vehicles`
+--
+
+INSERT INTO `vehicles` (`vehicle_id`, `license_plate`, `type_id`, `brand_id`, `capacity`, `color`, `description`, `image_path`, `is_public`, `created_at`) VALUES
+('91b4266e4ba941999f2186fcfabe4625', '2ภภ 5678', '46c86c2abe4943fa9eaefd8d5390988e', '0054a92642a24ddfbc9b3a41c6a6f182', 4, 'ขาว', 'รถกระบะ Isuzu D-Max สีขาว', 'https://example.com/image.jpg', 1, '2025-06-29 04:39:27'),
+('ce4c794c341c4ca9bc74d6484cdcbe22', '3ฒฒ 9012', '1bb3ecbfc708461fa6773b98263b561c', '4adbe2f19def47d1803bd7c375344be7', 4, 'ขาว', 'รถเก๋ง สีขาว', 'https://example.com/image.jpg', 1, '2025-06-29 04:42:45');
+
 -- --------------------------------------------------------
 
 --
@@ -413,6 +422,45 @@ CREATE TABLE `vehicle_brands` (
   `name` varchar(50) NOT NULL COMMENT 'ชื่อยี่ห้อ เช่น Mitsubishi, Toyota',
   `created_at` timestamp NULL DEFAULT current_timestamp() COMMENT 'วันที่สร้างยี่ห้อ'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บยี่ห้อของยานพาหนะ';
+
+--
+-- Dumping data for table `vehicle_brands`
+--
+
+INSERT INTO `vehicle_brands` (`brand_id`, `name`, `created_at`) VALUES
+('0054a92642a24ddfbc9b3a41c6a6f182', 'Toyota', '2025-06-29 03:53:41'),
+('10ac008cee404dcd9f27db9d476d6849', 'Great Wall Motors', '2025-06-29 03:56:17'),
+('11f97600bf76480c86e94c28b91c53cb', 'Ducati', '2025-06-29 03:57:45'),
+('1f77be61b12f459bbac2a625a9f95701', 'Hino', '2025-06-29 03:56:48'),
+('21a0317dd2d041bead7e96c14fb32a04', 'Kia', '2025-06-29 03:56:05'),
+('28096986aece42919d6c2d604daf2690', 'Suzuki รุ่น Let \' so', '2025-06-29 03:57:11'),
+('31868b6b9fcd452ba93fc8e5a2d5f07a', 'Hyundai', '2025-06-29 03:55:54'),
+('3407b7b806974ad380da4e03bb8e4075', 'MINI', '2025-06-29 03:55:39'),
+('4382fb0318734898a3db18a84489f963', 'Volvo', '2025-06-29 03:55:18'),
+('4541a487c93f4f108d88a106bd8ed05f', 'GPX', '2025-06-29 03:57:39'),
+('45424e4042514b12999f8e5bda5bfa97', 'BYD (รถไฟฟ้า)', '2025-06-29 03:56:25'),
+('4a2a8892225c438086499dec159a82bd', 'Suzuki', '2025-06-29 03:54:32'),
+('4adbe2f19def47d1803bd7c375344be7', 'Nissan', '2025-06-29 03:54:07'),
+('4e786e3ddd4b41fb9eebb1fd4acdefc7', 'Chevrolet', '2025-06-29 03:55:49'),
+('51a1e0a6338b4a35ae834395a216c43f', 'Mitsubishi', '2025-06-29 03:54:14'),
+('56851d9e508043809a52a771880594ea', 'Ford', '2025-06-29 03:55:44'),
+('58f400a03d0b4b6abc6b2c89b0127478', 'Porsche', '2025-06-29 03:55:33'),
+('627067d11c544523994e95d2de20ad00', 'BMW', '2025-06-29 03:54:59'),
+('7b50337ef86d42c2a063c24b94925138', 'MITSUBISHI Triton DoubleCab 2.5 GLS 4x4', '2025-06-29 03:56:59'),
+('90b3e11f9ed84853af439336e9b01334', 'Isuzu', '2025-06-29 03:54:46'),
+('91b099dc6a42486987c4dd82498bc319', 'Subaru', '2025-06-29 03:54:25'),
+('97feb0acd4804935864441fa3da83e1f', 'MG (Morris Garages)', '2025-06-29 03:56:11'),
+('9977ac0a08bf4fc7b70159d2fd21f9e6', 'Volkswagen', '2025-06-29 03:55:12'),
+('9a4c139d72be41fcb2bfae6c46d0f805', 'Tesla', '2025-06-29 03:57:56'),
+('9e51cb4cce964e149e7b959b52b2540a', 'Tiger', '2025-06-29 03:57:34'),
+('9ebcff4a133f47a0bde7cd6447938502', 'Audi', '2025-06-29 03:55:25'),
+('a5920d6481b7455e82f53ba4337a0c76', 'Honda', '2025-06-29 03:54:00'),
+('ce4b95b451ed4714a9644c6a9f7ea7ad', 'Kawasaki', '2025-06-29 03:57:27'),
+('d24820d4872f491d9baab0d42f1ec9d4', 'Mazda', '2025-06-29 03:54:19'),
+('d48e2b73e1c547e7b79182efcd1bec75', 'Yamaha', '2025-06-29 03:56:54'),
+('e44db22454e142a49ec7df38424ef3df', 'Changan', '2025-06-29 03:56:31'),
+('ed975bb17ae34d93b29fc5fcf9c6e89d', 'Yamaha Fino', '2025-06-29 03:57:05'),
+('f8410dae606b45a8aca44a77ced9e2ec', 'Mercedes-Benz', '2025-06-29 03:54:53');
 
 -- --------------------------------------------------------
 
@@ -438,6 +486,23 @@ CREATE TABLE `vehicle_types` (
   `name` varchar(50) NOT NULL COMMENT 'ชื่อประเภท เช่น รถกระบะ, รถตู้',
   `created_at` timestamp NULL DEFAULT current_timestamp() COMMENT 'วันที่สร้างประเภทยานพาหนะ'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บประเภทของยานพาหนะ';
+
+--
+-- Dumping data for table `vehicle_types`
+--
+
+INSERT INTO `vehicle_types` (`type_id`, `name`, `created_at`) VALUES
+('02c1a498157d444ab72c78b3a12c3645', 'รถมินิบัส', '2025-06-29 03:53:10'),
+('1bb3ecbfc708461fa6773b98263b561c', 'รถเก๋ง (Sedan)', '2025-06-29 03:50:31'),
+('3dd6ba6d46924605a22a5cb4a1316995', 'รถมอเตอร์ไซค์ทั่วไป (Standard)', '2025-06-29 03:51:20'),
+('46c86c2abe4943fa9eaefd8d5390988e', 'รถกระบะ CAB 4 ประตู', '2025-06-29 03:52:51'),
+('50b5c7a595524136a72a2bbbc93be3e7', 'รถโดยสาร (Bus)', '2025-06-29 03:50:55'),
+('6ba7befc5d014e72b3f1852483b2b237', 'รถกระบะ (Pickup Truck)', '2025-06-29 03:51:11'),
+('704b2c763d2f48b19c27a988a85b15df', 'รถตู้ (Van)', '2025-06-29 03:51:03'),
+('76ab88d13a6942df8b97412c49d23f59', 'รถบรรทุกเล็ก 6 ล้อ', '2025-06-29 03:52:59'),
+('97a41815af2e441da88e780c077f258a', 'รถบรรทุก 10 ล้อ', '2025-06-29 03:53:04'),
+('b3ed5ca016bf4bfc96107eb4739b6360', 'รถกระบะ CAB 2 ประตู', '2025-06-29 03:52:44'),
+('e94799b7bd8549a181dba1482e8d3e8e', 'รถบรรทุก 10 ล้อ', '2025-06-29 03:53:04');
 
 --
 -- Indexes for dumped tables

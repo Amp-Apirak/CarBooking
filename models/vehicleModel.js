@@ -31,6 +31,14 @@ async function getVehicleById(vehicleId) {
  * @returns {Promise<string>} คืนค่า vehicle_id ที่สร้าง
  */
 async function createVehicle(data) {
+  // ตรวจสอบว่า type_id มีอยู่ใน vehicle_types หรือไม่
+  const typeCheckSql = `SELECT COUNT(*) AS count FROM vehicle_types WHERE type_id = ?`;
+  const [[{ count }]] = await db.query(typeCheckSql, [data.type_id]);
+
+  if (count === 0) {
+    throw new Error(`Invalid type_id: ${data.type_id}`);
+  }
+
   const id = uuidv4().replace(/-/g, "");
   const sql = `
     INSERT INTO vehicles 
@@ -85,7 +93,6 @@ async function deleteVehicle(vehicleId) {
   const sql = `DELETE FROM vehicles WHERE vehicle_id = ?`;
   await db.query(sql, [vehicleId]);
 }
-
 
 // ดึงรายการรถแบบมี pagination
 async function getVehiclesPaged(limit, offset) {
@@ -152,7 +159,7 @@ const getAllVehicleBrands = async (limit, offset) => {
     `SELECT COUNT(*) AS total FROM vehicle_brands`
   );
   return { rows, total };
-}; 
+};
 
 // ดึงรายการยี่ห้อรถตามไอดี
 async function getVehicleBrandById(brandId) {
@@ -167,8 +174,7 @@ async function createBrand(name) {
   const sql = `INSERT INTO vehicle_brands (brand_id, name) VALUES (?, ?)`;
   await db.query(sql, [id, name]);
   return id;
-};
-
+}
 
 // แก้ไขยี่ห้อ
 async function updateBrand(brandId, name) {
