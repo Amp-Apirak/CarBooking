@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 29, 2025 at 12:12 PM
+-- Generation Time: Jun 29, 2025 at 01:19 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -126,6 +126,14 @@ CREATE TABLE `bookings` (
   `approval_status` enum('pending','approved','rejected') DEFAULT 'pending'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลการจองรถ';
 
+--
+-- Dumping data for table `bookings`
+--
+
+INSERT INTO `bookings` (`booking_id`, `user_id`, `vehicle_id`, `driver_id`, `num_passengers`, `reason`, `phone`, `start_date`, `start_time`, `end_date`, `end_time`, `created_at`, `origin_location`, `destination_location`, `start_odometer`, `end_odometer`, `total_distance`, `status`, `flow_id`, `approval_status`) VALUES
+('81746405193b44a598b0a12a1d1f5677', 'f9591a0215794225b088d53b6d2ef37d', 'ce4c794c341c4ca9bc74d6484cdcbe22', '3b1f8a7c5d9e2f6a4c8b0d1e3f5a7c9d', 2, 'ไปรับเอกสาร', '0812345678', '2025-07-01', '09:00:00', '2025-07-01', '12:00:00', '2025-06-29 10:50:42', 'สํานักงานใหญ่', 'สาขา 4', 1000, 1050, 50.00, 'pending', '2c9cd21bd64b4447af7cb1c8cc03c31b', 'pending'),
+('f7a8cf7ec3644264ab8eda3c05b483f7', 'f9591a0215794225b088d53b6d2ef37d', 'ce4c794c341c4ca9bc74d6484cdcbe22', '3b1f8a7c5d9e2f6a4c8b0d1e3f5a7c9d', 2, 'ไปรับเอกสาร', '0812345678', '2025-07-01', '09:00:00', '2025-07-01', '12:00:00', '2025-06-29 11:08:29', 'สํานักงานใหญ่', 'สาขา 4', 1000, 1050, 50.00, 'pending', '2c9cd21bd64b4447af7cb1c8cc03c31b', 'pending');
+
 -- --------------------------------------------------------
 
 --
@@ -156,6 +164,13 @@ CREATE TABLE `booking_approval_status` (
   `is_rejected` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `booking_approval_status`
+--
+
+INSERT INTO `booking_approval_status` (`booking_id`, `flow_id`, `current_step_order`, `is_approved`, `is_rejected`) VALUES
+('f7a8cf7ec3644264ab8eda3c05b483f7', '2c9cd21bd64b4447af7cb1c8cc03c31b', 1, 0, 0);
+
 -- --------------------------------------------------------
 
 --
@@ -169,6 +184,14 @@ CREATE TABLE `booking_equipments` (
   `created_at` timestamp NULL DEFAULT current_timestamp() COMMENT 'วันที่เพิ่มอุปกรณ์เสริมให้กับการจอง',
   `quantity` int(11) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเชื่อมการจองกับอุปกรณ์เสริม';
+
+--
+-- Dumping data for table `booking_equipments`
+--
+
+INSERT INTO `booking_equipments` (`booking_equipment_id`, `booking_id`, `equipment_id`, `created_at`, `quantity`) VALUES
+('cac1c8f986fd42ca8911fd247caa0aa7', '81746405193b44a598b0a12a1d1f5677', 'b6073afe518a4097ad284540dd7751df', '2025-06-29 10:54:23', 1),
+('ed9a54d5f98640d19684f645e94859dd', '81746405193b44a598b0a12a1d1f5677', '1dde628980ae46069b7b9d53a1ef5783', '2025-06-29 10:53:38', 1);
 
 -- --------------------------------------------------------
 
@@ -296,13 +319,18 @@ INSERT INTO `refresh_tokens` (`token_id`, `user_id`, `token_hash`, `expired_at`,
 ('056eab07-ac32-4ce3-ba97-48fc5e2d59f0', '036354d67ec34f9eb28cd26c8b2ec26e', 'ebb2787b9439023f6f78a82d1050da95050565d17ff6aa17efec8e70c9d3c17d', '2025-07-06 05:02:58', NULL, '2025-06-29 05:02:58'),
 ('2a32af64-380c-4ba8-b58c-c22b9e28b963', '8b06d87178544b52b9269eafc89c4cb0', '31adad82e5ad885527590e64bc4e22c09b7873ca60e3744993d96c8539674429', '2025-07-05 16:15:10', NULL, '2025-06-28 16:15:10'),
 ('332548de-5752-4c7a-b10a-850be9bbc64a', '036354d67ec34f9eb28cd26c8b2ec26e', 'd804e56d887c12cd65f6f21e36df8d83adae20e7436d0e8b13f3011823ae5e34', '2025-07-05 15:49:54', NULL, '2025-06-28 15:49:54'),
+('3d1f353c-19ef-4b46-ba52-bfbc995125c1', '036354d67ec34f9eb28cd26c8b2ec26e', 'c1d4686928da3e4408a0af60fa9979aa6c72cf6427de0b73514561d167517781', '2025-07-06 10:21:49', NULL, '2025-06-29 10:21:49'),
 ('6af44aca-79c1-4fb5-92f3-1c93a6d4092b', '036354d67ec34f9eb28cd26c8b2ec26e', 'a9521b8d1ba3df0181bed085bc700fd44a6522ec2ac40a38b2edd5828080c9f2', '2025-07-05 16:08:55', NULL, '2025-06-28 16:08:55'),
 ('716e4fef-bd7f-4b5e-a58c-d561b41fbe44', 'f9591a0215794225b088d53b6d2ef37d', '030e78a415f0b3e3e8c929d62745f36d6b1c98d74d0fb16258aeea2a01386662', '2025-07-05 16:14:53', NULL, '2025-06-28 16:14:53'),
 ('779e1034-81a3-4d8b-891d-98985368e2d4', 'f31524fdbb9f4460b7c5f80fda33cf08', '5aa89304378ef45052c42a24eb5083c2a1561dd3031b15c5f9e312241085e5f6', '2025-07-05 16:14:13', NULL, '2025-06-28 16:14:13'),
+('7e87ab58-a111-40fd-93e1-745436f473b8', '3699f1ea64684ac78b02afd1fb9b3cdd', 'eb71bc3ce618581fddae985d25efed0c16dbc1044aea15eb6178cf79484a867b', '2025-07-06 10:58:26', NULL, '2025-06-29 10:58:26'),
 ('953b10a6-b927-4529-9b62-7de74ee33b56', 'cd257e3d337941e5ac61f5ea9de99e92', '21b724b78da5d7621f9fb12b31219ce91b01199f1569530079fab676390f5968', '2025-07-06 05:03:21', NULL, '2025-06-29 05:03:21'),
 ('a09cb443-6eea-4b60-bfad-385fdb28ca0a', '036354d67ec34f9eb28cd26c8b2ec26e', 'c0a008b333fa5b4ad651b2d8994850b38741b6cb3f4c06e0486687795a2d7b45', '2025-07-06 05:02:41', NULL, '2025-06-29 05:02:41'),
+('a3292fe4-f3bd-49ce-8af5-40f5c6ecdee0', '036354d67ec34f9eb28cd26c8b2ec26e', '4ce069fb63886a761855bc8685251c8d5e12012df80db766bacb01a3e9359de8', '2025-07-06 10:46:57', NULL, '2025-06-29 10:46:57'),
+('a98ca90f-c20e-4fc0-98d7-9524e8d95ece', '3699f1ea64684ac78b02afd1fb9b3cdd', 'f2c87345e25c55084ec50c3f085759a546703dae386a103c0ca453d5c6c4ab9a', '2025-07-06 11:11:01', NULL, '2025-06-29 11:11:01'),
 ('bd2c77bd-cf27-4ff6-9bb8-f400843d99da', 'aadaec379b964a44ac33896816f752ad', 'fe2e99d428ea85aaed75e903143024aec2c8a4edb848f0cffc735b20ca2c9c72', '2025-07-05 16:14:22', NULL, '2025-06-28 16:14:22'),
 ('cb65206b-5bea-4c78-ae69-0d5e737e4b89', '5ed0cce547ea4898aca5ee633449c2fb', 'c6532139a289aca1874014f59641d187abc3282c09e5ef672583db10739fb994', '2025-07-05 16:13:17', NULL, '2025-06-28 16:13:17'),
+('d495edec-a904-4bb7-89d9-17e19fbe538a', '036354d67ec34f9eb28cd26c8b2ec26e', '250d337aecdde26c964dabdd55bffaf66b799b55b2bee0297a8bf3040cae1f7f', '2025-07-06 10:50:24', NULL, '2025-06-29 10:50:24'),
 ('e10479fa-7a0f-4609-b5b1-d1e2298a8fa0', '3699f1ea64684ac78b02afd1fb9b3cdd', 'b528c6f1fc385464c80998cdf67223301e4bf20f3c398b52f2ec439d750e57c7', '2025-07-05 16:14:02', NULL, '2025-06-28 16:14:02'),
 ('eca08e39-9a76-4fb5-bd33-efee42216498', '036354d67ec34f9eb28cd26c8b2ec26e', 'd92b3bb6df15007cea2bda1e2f58bebaac654c4f2e5a354c511619e2e13a3e99', '2025-07-06 09:46:46', NULL, '2025-06-29 09:46:46'),
 ('eef46306-bc9d-437c-852c-cfc2a8cfb6cc', '036354d67ec34f9eb28cd26c8b2ec26e', '30e4734af342c5ba261b12bc6b09f511eeace0b11eaf964d22671d5e115929fc', '2025-07-06 03:48:23', NULL, '2025-06-29 03:48:23'),
@@ -417,6 +445,19 @@ CREATE TABLE `user_allowed_orgs` (
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `user_allowed_orgs`
+--
+
+INSERT INTO `user_allowed_orgs` (`id`, `user_id`, `organization_id`, `granted_by`, `created_at`) VALUES
+('11fd87ab7ba8445e90a1b9c3e6627d7d', '8b06d87178544b52b9269eafc89c4cb0', 'd6149e48543811f097453417ebbed40a', '036354d67ec34f9eb28cd26c8b2ec26e', '2025-06-29 17:30:53'),
+('22ec87db47f746808f92dae7ada5ae5b', 'aadaec379b964a44ac33896816f752ad', 'bf4f9c05543611f097453417ebbed40a', '036354d67ec34f9eb28cd26c8b2ec26e', '2025-06-29 17:29:58'),
+('6de1396f8fa74f45a746f5d154f4931a', 'f31524fdbb9f4460b7c5f80fda33cf08', 'bf4f9c05543611f097453417ebbed40a', '036354d67ec34f9eb28cd26c8b2ec26e', '2025-06-29 17:30:08'),
+('a801b8ec8c6c49dd8bd0a61ee8bcfe73', 'f9591a0215794225b088d53b6d2ef37d', 'bf515beb543711f097453417ebbed40a', '036354d67ec34f9eb28cd26c8b2ec26e', '2025-06-29 17:30:36'),
+('c37f287316494e4e825275a7367c4d9f', '036354d67ec34f9eb28cd26c8b2ec26e', '2e950612491a11f08b210242ac120002', '036354d67ec34f9eb28cd26c8b2ec26e', '2025-06-29 17:27:15'),
+('c985c4ea494640d58d9cc0f532ef309c', '5ed0cce547ea4898aca5ee633449c2fb', 'bf4f9c05543611f097453417ebbed40a', '036354d67ec34f9eb28cd26c8b2ec26e', '2025-06-29 17:27:49'),
+('f6a48902ae67478590f3229beb85fc5a', '3699f1ea64684ac78b02afd1fb9b3cdd', 'bf4f9c05543611f097453417ebbed40a', '036354d67ec34f9eb28cd26c8b2ec26e', '2025-06-29 17:29:46');
+
 -- --------------------------------------------------------
 
 --
@@ -429,6 +470,19 @@ CREATE TABLE `user_roles` (
   `role_id` char(32) NOT NULL COMMENT 'รหัสบทบาท (FK → roles.role_id)',
   `created_at` timestamp NULL DEFAULT current_timestamp() COMMENT 'วันที่กำหนดบทบาทให้ผู้ใช้'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเชื่อมผู้ใช้กับบทบาท';
+
+--
+-- Dumping data for table `user_roles`
+--
+
+INSERT INTO `user_roles` (`user_role_id`, `user_id`, `role_id`, `created_at`) VALUES
+('11b0f3cf586f4011a9404aa68601ff3c', 'f9591a0215794225b088d53b6d2ef37d', '687e5497bfdc447da1e6e4d98827b46c', '2025-06-29 10:24:25'),
+('14cead2b702c446f8408fb67c551f41d', '8b06d87178544b52b9269eafc89c4cb0', '0527b784f86b49a9b3e80084e9cf7ce5', '2025-06-29 10:25:41'),
+('6cd3526ddd2c4a9e9bb84bd0b28fa049', '5ed0cce547ea4898aca5ee633449c2fb', '850f38dc62364a8ca0adadce762a46b5', '2025-06-29 10:23:35'),
+('9c9a2e4335b742baa0b155db15cc09f0', '036354d67ec34f9eb28cd26c8b2ec26e', '5e600f16228846a59f512dcda88b1fc0', '2025-06-29 10:22:54'),
+('cb3b7a53383b4b3c95c076c34b8d4fd3', 'f9591a0215794225b088d53b6d2ef37d', 'ac171b33817c4b889666abe978e11baa', '2025-06-29 10:25:13'),
+('cf494e1b7c534be28da35cd5600294b5', '8b06d87178544b52b9269eafc89c4cb0', '687e5497bfdc447da1e6e4d98827b46c', '2025-06-29 10:24:35'),
+('e0957fefc8d54ab6ab1b1146ba84b922', 'f31524fdbb9f4460b7c5f80fda33cf08', '7d8729453319497eb7630914179975b4', '2025-06-29 10:25:27');
 
 -- --------------------------------------------------------
 

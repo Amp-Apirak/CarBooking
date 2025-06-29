@@ -62,7 +62,6 @@ app.use("/api/role-permissions", rolePermissionRoutes);
 app.use("/api/organizations", organizationRoutes); // เส้นทาง Organizations
 app.use('/api/user-roles',      userRoleRoutes);
 app.use('/api/user-allowed-orgs', userAllowedOrgRoutes);
-app.use(express.json());
 
 /* ---------- ทดสอบเส้นทาง root ---------- */
 app.get("/", async (req, res) => {

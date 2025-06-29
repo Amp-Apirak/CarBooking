@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const auth = require("../middleware/authMiddleware");
 const ctrl = require("../controllers/vehicleController");
+const checkPermission = require("../middleware/checkPermission");
 
 router.use(auth);
 
@@ -72,7 +73,7 @@ router.get("/types/:id", ctrl.getTypeById);
  *       201:
  *         description: เพิ่มสำเร็จ
  */
-router.post("/types", ctrl.createType);
+router.post("/types", checkPermission('manage_vehicles'), ctrl.createType);
 
 /**
  * @swagger
@@ -103,7 +104,7 @@ router.post("/types", ctrl.createType);
  *       200:
  *         description: แก้ไขสำเร็จ
  */
-router.put("/types/:id", ctrl.updateType);
+router.put("/types/:id", checkPermission('manage_vehicles'), ctrl.updateType);
 
 /**
  * @swagger
@@ -124,7 +125,7 @@ router.put("/types/:id", ctrl.updateType);
  *       200:
  *         description: ลบสำเร็จ
  */
-router.delete("/types/:id", ctrl.deleteType);
+router.delete("/types/:id", checkPermission('manage_vehicles'), ctrl.deleteType);
 
 // ------------------------------------ Vehicle Brands ------------------------------------
 
@@ -181,7 +182,7 @@ router.get("/brands/:id", ctrl.getBrandById);
  *       201:
  *         description: สำเร็จ
  */
-router.post("/brands", ctrl.createBrand);
+router.post("/brands", checkPermission('manage_vehicles'), ctrl.createBrand);
 
 /**
  * @swagger
@@ -212,7 +213,7 @@ router.post("/brands", ctrl.createBrand);
  *       200:
  *         description: สำเร็จ
  */
-router.put("/brands/:id", ctrl.updateBrand);
+router.put("/brands/:id", checkPermission('manage_vehicles'), ctrl.updateBrand);
 
 /**
  * @swagger
@@ -233,7 +234,7 @@ router.put("/brands/:id", ctrl.updateBrand);
  *       200:
  *         description: สำเร็จ
  */
-router.delete("/brands/:id", ctrl.deleteBrand);
+router.delete("/brands/:id", checkPermission('manage_vehicles'), ctrl.deleteBrand);
 
 // --------------------------------------- Vehicle ------------------------------------
 
@@ -315,7 +316,7 @@ router.get("/", ctrl.list);
  *       201:
  *         description: สำเร็จ
  */
-router.post("/", ctrl.create);
+router.post("/", checkPermission('manage_vehicles'), ctrl.create);
 
 /**
  * @swagger
@@ -369,7 +370,7 @@ router.post("/", ctrl.create);
  *       200:
  *         description: สำเร็จ
  */
-router.put("/:id", ctrl.update);
+router.put("/:id", checkPermission('manage_vehicles'), ctrl.update);
 
 /**
  * @swagger
@@ -390,6 +391,6 @@ router.put("/:id", ctrl.update);
  *       200:
  *         description: สำเร็จ
  */
-router.delete("/:id", ctrl.remove);
+router.delete("/:id", checkPermission('manage_vehicles'), ctrl.remove);
 
 module.exports = router;

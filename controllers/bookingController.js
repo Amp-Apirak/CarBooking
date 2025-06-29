@@ -15,6 +15,8 @@ const approvalStatusModel = require("../models/bookingApprovalStatusModel");
 const approvalLogModel = require("../models/bookingApprovalLogModel");
 const approvalStepModel = require("../models/approvalStepModel");
 const userModel = require("../models/userModel");
+const userRoleModel = require("../models/userRoleModel");
+const organizationModel = require("../models/organizationModel");
 
 /**
  * GET /api/bookings
@@ -25,8 +27,30 @@ exports.list = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const page = parseInt(req.query.page) || 1;
     const offset = (page - 1) * limit;
+    const user_id = req.user?.user_id;
 
-    const { rows, total } = await getBookingsPaged(limit, offset);
+    // 1. Get organizations user has direct access to
+    const directOrgs = await organizationModel.getUserAccessibleOrganizations(
+      user_id
+    );
+    if (!directOrgs.length) {
+      return res.json({ data: [], pagination: { total: 0, page, limit, totalPages: 0 } });
+    }
+
+    // 2. Get all descendant organizations for each directly accessible org
+    let allAccessibleOrgIds = new Set();
+    for (const org of directOrgs) {
+      const hierarchy = await organizationModel.getOrganizationHierarchy(
+        org.organization_id
+      );
+      hierarchy.forEach((subOrg) => allAccessibleOrgIds.add(subOrg.organization_id));
+    }
+
+    const accessibleOrgIds = Array.from(allAccessibleOrgIds);
+
+    // 3. Pass the list of orgs to the model
+    const { rows, total } = await getBookingsPaged(limit, offset, accessibleOrgIds);
+
     res.json({
       data: rows,
       pagination: {
@@ -66,6 +90,10 @@ exports.getById = async (req, res) => {
 exports.create = async (req, res) => {
   try {
     const id = await createBooking(req.body);
+    // ถ้ามี flow_id ให้สร้าง status เริ่มต้น
+    if (req.body.flow_id) {
+      await approvalStatusModel.initStatus(id, req.body.flow_id);
+    }
     res.status(201).json({ booking_id: id });
   } catch (err) {
     console.error("Error in POST /bookings:", err);
@@ -139,8 +167,11 @@ exports.approveBooking = async (req, res) => {
     if (!currentStep)
       return res.status(404).json({ error: "ไม่พบขั้นตอนปัจจุบัน" });
 
-    const user = await userModel.getUserById(user_id);
-    if (!user || user.role_id !== currentStep.role_id) {
+    const userRoles = await userRoleModel.getRolesByUser(user_id);
+    if (
+      !userRoles ||
+      !userRoles.some((role) => role.role_id === currentStep.role_id)
+    ) {
       return res
         .status(403)
         .json({ error: "คุณไม่มีสิทธิ์อนุมัติในขั้นตอนนี้" });
@@ -210,8 +241,11 @@ exports.rejectBooking = async (req, res) => {
     if (!currentStep)
       return res.status(404).json({ error: "ไม่พบขั้นตอนปัจจุบัน" });
 
-    const user = await userModel.getUserById(user_id);
-    if (!user || user.role_id !== currentStep.role_id) {
+    const userRoles = await userRoleModel.getRolesByUser(user_id);
+    if (
+      !userRoles ||
+      !userRoles.some((role) => role.role_id === currentStep.role_id)
+    ) {
       return res
         .status(403)
         .json({ error: "คุณไม่มีสิทธิ์ปฏิเสธในขั้นตอนนี้" });

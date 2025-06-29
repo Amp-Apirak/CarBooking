@@ -67,13 +67,13 @@ router.get("/:id", ctrl.getById); // GET /api/bookings/:id
  *             properties:
  *               user_id:
  *                 type: string
- *                 example: "1b695713b98d47acb3bc8767b2cc0e37"
+ *                 example: "f9591a0215794225b088d53b6d2ef37d"
  *               vehicle_id:
  *                 type: string
- *                 example: "26a11c410f824305bb2d73e22801161f"
+ *                 example: "ce4c794c341c4ca9bc74d6484cdcbe22"
  *               driver_id:
  *                 type: string
- *                 example: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+ *                 example: "3b1f8a7c5d9e2f6a4c8b0d1e3f5a7c9d"
  *               num_passengers:
  *                 type: integer
  *                 example: 2
@@ -115,6 +115,12 @@ router.get("/:id", ctrl.getById); // GET /api/bookings/:id
  *                 type: string
  *                 format: time
  *                 example: "12:00:00"
+ *               status:
+ *                 type: string
+ *                 enum: ["pending"]
+ *               flow_id:
+ *                 type: string
+ *                 example: "2c9cd21bd64b4447af7cb1c8cc03c31b"
  *     responses:
  *       201:
  *         description: สร้างเรียบร้อย

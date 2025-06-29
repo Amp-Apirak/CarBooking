@@ -17,13 +17,14 @@ const {
   verifyRefreshToken,
   revokeRefreshToken,
 } = require("../models/authTokenModel");
+const userRoleModel = require("../models/userRoleModel");
 const ldap = require("../config/ldap"); // LDAP client
 
-/** สร้าง Access Token (1 วัน) พร้อม jti, user_id, username, organization_id */
-function signAccessToken({ user_id, username, organization_id }) {
+/** สร้าง Access Token (1 วัน) พร้อม jti, user_id, username, organization_id, และ roles */
+function signAccessToken({ user_id, username, organization_id, roles }) {
   const jti = uuidv4();
   return jwt.sign(
-    { jti, user_id, username, organization_id },
+    { jti, user_id, username, organization_id, roles },
     process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
@@ -74,8 +75,12 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
     }
 
-    // สร้าง tokens ใส่ org_id ลง payload
-    const accessToken  = signAccessToken(user);
+    // ดึง roles ของ user
+    const roles = await userRoleModel.getRolesByUser(user.user_id);
+    const userWithRoles = { ...user, roles: roles.map(r => r.name) }; // เก็บเฉพาะชื่อ role
+
+    // สร้าง tokens ใส่ org_id และ roles ลง payload
+    const accessToken  = signAccessToken(userWithRoles);
     const refreshToken = await createRefreshToken(user.user_id, 7);
 
     res.json({ accessToken, refreshToken });
