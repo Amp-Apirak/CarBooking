@@ -257,7 +257,148 @@ router.delete("/brands/:id", checkPermission('manage_vehicles'), ctrl.deleteBran
  *       200:
  *         description: สำเร็จ
  */
+/**
+ * @swagger
+ * /vehicles/available:
+ *   get:
+ *     summary: ดึงรายการรถที่ว่างในช่วงเวลาที่กำหนด
+ *     tags: [Vehicles]
+ *     parameters:
+ *       - in: query
+ *         name: start_date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: วันที่เริ่มต้น
+ *         example: "2025-07-01 09:00:00"
+ *       - in: query
+ *         name: end_date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: วันที่สิ้นสุด
+ *         example: "2025-07-01 17:00:00"
+ *       - in: query
+ *         name: type_id
+ *         schema:
+ *           type: string
+ *         description: กรองตามประเภทรถ
+ *       - in: query
+ *         name: brand_id
+ *         schema:
+ *           type: string
+ *         description: กรองตามยี่ห้อรถ
+ *       - in: query
+ *         name: min_seats
+ *         schema:
+ *           type: integer
+ *         description: จำนวนที่นั่งขั้นต่ำ
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: กรองตามสถานที่
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: จำนวนรายการสูงสุด
+ *     responses:
+ *       200:
+ *         description: สำเร็จ
+ *       400:
+ *         description: ข้อมูลไม่ถูกต้อง
+ *       401:
+ *         description: ไม่ได้รับอนุญาต
+ */
+router.get("/available", ctrl.getAvailable);
+
 router.get("/:id", ctrl.getById);
+
+/**
+ * @swagger
+ * /vehicles/{id}/availability:
+ *   get:
+ *     summary: ตรวจสอบความพร้อมของรถในช่วงเวลาที่กำหนด
+ *     tags: [Vehicles]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: รหัสรถ
+ *       - in: query
+ *         name: start_date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: วันที่เริ่มต้น
+ *       - in: query
+ *         name: end_date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: วันที่สิ้นสุด
+ *       - in: query
+ *         name: exclude_booking_id
+ *         schema:
+ *           type: string
+ *         description: รหัสการจองที่ต้องการยกเว้น (สำหรับการแก้ไข)
+ *     responses:
+ *       200:
+ *         description: สำเร็จ
+ *       400:
+ *         description: ข้อมูลไม่ถูกต้อง
+ *       404:
+ *         description: ไม่พบรถ
+ *       401:
+ *         description: ไม่ได้รับอนุญาต
+ */
+router.get("/:id/availability", ctrl.checkAvailability);
+
+/**
+ * @swagger
+ * /vehicles/{id}/conflicts:
+ *   get:
+ *     summary: ดึงรายการการจองที่ขัดแย้งกับช่วงเวลาที่กำหนด
+ *     tags: [Vehicles]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: รหัสรถ
+ *       - in: query
+ *         name: start_date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: วันที่เริ่มต้น
+ *       - in: query
+ *         name: end_date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: วันที่สิ้นสุด
+ *     responses:
+ *       200:
+ *         description: สำเร็จ
+ *       400:
+ *         description: ข้อมูลไม่ถูกต้อง
+ *       404:
+ *         description: ไม่พบรถ
+ *       401:
+ *         description: ไม่ได้รับอนุญาต
+ */
+router.get("/:id/conflicts", ctrl.getBookingConflicts);
 
 // CRUD vehicles
 

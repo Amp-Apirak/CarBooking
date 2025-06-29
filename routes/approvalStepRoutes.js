@@ -84,4 +84,79 @@ router.get("/:flow_id/steps", stepController.getStepsByFlow); // ดึงขั
  */
 router.delete("/:flow_id/steps", stepController.deleteStepsByFlow); // ลบทุกขั้นตอนของ flow
 
+/**
+ * @swagger
+ * /approval-flows/{flow_id}/steps/{stepId}:
+ *   put:
+ *     summary: แก้ไขขั้นตอนเดียวใน Flow
+ *     tags: [ApprovalSteps]
+ *     parameters:
+ *       - in: path
+ *         name: flow_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Flow ID
+ *       - in: path
+ *         name: stepId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Step ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [step_order, role_id, step_name]
+ *             properties:
+ *               step_order:
+ *                 type: integer
+ *                 example: 2
+ *               role_id:
+ *                 type: string
+ *                 example: "role-002"
+ *               step_name:
+ *                 type: string
+ *                 example: "ผู้อนุมัติระดับ 2"
+ *     responses:
+ *       200:
+ *         description: แก้ไขขั้นตอนสำเร็จ
+ *       400:
+ *         description: ข้อมูลไม่ครบหรือขั้นตอนไม่อยู่ใน flow ที่ระบุ
+ *       404:
+ *         description: ไม่พบขั้นตอนที่ระบุ
+ */
+router.put("/:flow_id/steps/:stepId", stepController.updateStep); // แก้ไขขั้นตอนเดียว
+
+/**
+ * @swagger
+ * /approval-flows/{flow_id}/steps/{stepId}:
+ *   delete:
+ *     summary: ลบขั้นตอนเดียวใน Flow
+ *     tags: [ApprovalSteps]
+ *     parameters:
+ *       - in: path
+ *         name: flow_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Flow ID
+ *       - in: path
+ *         name: stepId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Step ID
+ *     responses:
+ *       200:
+ *         description: ลบขั้นตอนสำเร็จ
+ *       400:
+ *         description: ขั้นตอนไม่อยู่ใน flow ที่ระบุ
+ *       404:
+ *         description: ไม่พบขั้นตอนที่ระบุ
+ */
+router.delete("/:flow_id/steps/:stepId", stepController.deleteStep); // ลบขั้นตอนเดียว
+
 module.exports = router;

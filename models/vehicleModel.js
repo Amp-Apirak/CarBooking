@@ -188,6 +188,156 @@ async function deleteBrand(brandId) {
   await db.query(sql, [brandId]);
 }
 
+/**
+ * ดึงรายการรถที่ว่างในช่วงเวลาที่กำหนด
+ * @param {string} startDate วันที่เริ่มต้น (YYYY-MM-DD HH:mm:ss)
+ * @param {string} endDate วันที่สิ้นสุด (YYYY-MM-DD HH:mm:ss)
+ * @param {Object} filters ตัวกรองเพิ่มเติม
+ * @returns {Promise<Array>} รายการรถที่ว่าง
+ */
+async function getAvailableVehicles(startDate, endDate, filters = {}) {
+  let sql = `
+    SELECT 
+      v.*,
+      vt.name as type_name,
+      vb.name as brand_name
+    FROM vehicles v
+    LEFT JOIN vehicle_types vt ON v.type_id = vt.type_id
+    LEFT JOIN vehicle_brands vb ON v.brand_id = vb.brand_id
+    WHERE v.status = 'active'
+      AND v.vehicle_id NOT IN (
+        SELECT DISTINCT b.vehicle_id 
+        FROM bookings b 
+        WHERE b.vehicle_id IS NOT NULL
+          AND b.status IN ('approved', 'in_progress')
+          AND (
+            (b.start_date <= ? AND b.end_date >= ?) OR
+            (b.start_date <= ? AND b.end_date >= ?) OR
+            (b.start_date >= ? AND b.end_date <= ?)
+          )
+      )
+  `;
+  
+  const params = [
+    startDate, startDate,  // ตรวจสอบว่าช่วงใหม่เริ่มในช่วงเดิม
+    endDate, endDate,      // ตรวจสอบว่าช่วงใหม่จบในช่วงเดิม
+    startDate, endDate     // ตรวจสอบว่าช่วงใหม่ครอบคลุมช่วงเดิม
+  ];
+  
+  // เพิ่มตัวกรองตามประเภทรถ
+  if (filters.type_id) {
+    sql += ' AND v.type_id = ?';
+    params.push(filters.type_id);
+  }
+  
+  // เพิ่มตัวกรองตามยี่ห้อ
+  if (filters.brand_id) {
+    sql += ' AND v.brand_id = ?';
+    params.push(filters.brand_id);
+  }
+  
+  // เพิ่มตัวกรองตามจำนวนที่นั่ง
+  if (filters.min_seats) {
+    sql += ' AND v.seats >= ?';
+    params.push(parseInt(filters.min_seats));
+  }
+  
+  // เพิ่มตัวกรองตามสถานที่
+  if (filters.location) {
+    sql += ' AND v.location LIKE ?';
+    params.push(`%${filters.location}%`);
+  }
+  
+  sql += ' ORDER BY v.license_plate';
+  
+  // เพิ่ม limit ถ้ามี
+  if (filters.limit) {
+    sql += ' LIMIT ?';
+    params.push(parseInt(filters.limit));
+  }
+  
+  const [rows] = await db.query(sql, params);
+  return rows;
+}
+
+/**
+ * ตรวจสอบว่ารถคันนั้นว่างในช่วงเวลาที่กำหนดหรือไม่
+ * @param {string} vehicleId รหัสรถ
+ * @param {string} startDate วันที่เริ่มต้น
+ * @param {string} endDate วันที่สิ้นสุด
+ * @param {string} excludeBookingId รหัสการจองที่ต้องการยกเว้น (สำหรับการแก้ไข)
+ * @returns {Promise<boolean>} true ถ้าว่าง, false ถ้าไม่ว่าง
+ */
+async function isVehicleAvailable(vehicleId, startDate, endDate, excludeBookingId = null) {
+  let sql = `
+    SELECT COUNT(*) as count
+    FROM bookings 
+    WHERE vehicle_id = ?
+      AND status IN ('approved', 'in_progress')
+      AND (
+        (start_date <= ? AND end_date >= ?) OR
+        (start_date <= ? AND end_date >= ?) OR
+        (start_date >= ? AND end_date <= ?)
+      )
+  `;
+  
+  const params = [
+    vehicleId,
+    startDate, startDate,
+    endDate, endDate,
+    startDate, endDate
+  ];
+  
+  // ยกเว้นการจองนั้นๆ (สำหรับการแก้ไข)
+  if (excludeBookingId) {
+    sql += ' AND booking_id != ?';
+    params.push(excludeBookingId);
+  }
+  
+  const [rows] = await db.query(sql, params);
+  return rows[0].count === 0;
+}
+
+/**
+ * ดึงรายการการจองที่ทับซ้อนกับช่วงเวลาที่กำหนด
+ * @param {string} vehicleId รหัสรถ
+ * @param {string} startDate วันที่เริ่มต้น
+ * @param {string} endDate วันที่สิ้นสุด
+ * @returns {Promise<Array>} รายการการจองที่ขัดแย้ง
+ */
+async function getVehicleBookingConflicts(vehicleId, startDate, endDate) {
+  const sql = `
+    SELECT 
+      b.booking_id,
+      b.start_date,
+      b.end_date,
+      b.status,
+      u.first_name,
+      u.last_name,
+      u.username
+    FROM bookings b
+    LEFT JOIN users u ON b.user_id = u.user_id
+    WHERE b.vehicle_id = ?
+      AND b.status IN ('approved', 'in_progress')
+      AND (
+        (b.start_date <= ? AND b.end_date >= ?) OR
+        (b.start_date <= ? AND b.end_date >= ?) OR
+        (b.start_date >= ? AND b.end_date <= ?)
+      )
+    ORDER BY b.start_date
+  `;
+  
+  const params = [
+    vehicleId,
+    startDate, startDate,
+    endDate, endDate,
+    startDate, endDate
+  ];
+  
+  const [rows] = await db.query(sql, params);
+  return rows;
+}
+
 module.exports = {
   getAllVehicles,
   getVehicleById,
@@ -205,4 +355,7 @@ module.exports = {
   getVehicleTypeById,
   getVehicleBrandById,
   getVehiclesPaged,
+  getAvailableVehicles,
+  isVehicleAvailable,
+  getVehicleBookingConflicts,
 };

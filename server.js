@@ -47,6 +47,8 @@ const rolePermissionRoutes = require("./routes/rolePermissionRoutes");
 const organizationRoutes = require('./routes/organizationRoutes');
 const userRoleRoutes      = require('./routes/userRoleRoutes');
 const userAllowedOrgRoutes= require('./routes/userAllowedOrgRoutes');
+const driverRoutes        = require('./routes/driverRoutes');
+const userRoutes          = require('./routes/userRoutes');
 
 app.use("/api/ad", adRoutes); // เส้นทาง AD
 app.use("/api/auth", authRoutes); // เส้นทาง Auth ทั้งหมด
@@ -62,6 +64,8 @@ app.use("/api/role-permissions", rolePermissionRoutes);
 app.use("/api/organizations", organizationRoutes); // เส้นทาง Organizations
 app.use('/api/user-roles',      userRoleRoutes);
 app.use('/api/user-allowed-orgs', userAllowedOrgRoutes);
+app.use('/api/drivers',           driverRoutes); // เส้นทาง Drivers
+app.use('/api/users',             userRoutes);   // เส้นทาง Users
 
 /* ---------- ทดสอบเส้นทาง root ---------- */
 app.get("/", async (req, res) => {

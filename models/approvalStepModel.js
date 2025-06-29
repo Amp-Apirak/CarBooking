@@ -33,8 +33,38 @@ async function deleteStepsByFlow(flow_id) {
   await db.query(`DELETE FROM approval_steps WHERE flow_id = ?`, [flow_id]);
 }
 
+/** ดึงขั้นตอนตาม step_id */
+async function getStepById(step_id) {
+  const [rows] = await db.query(
+    `SELECT s.*, r.name as role_name
+     FROM approval_steps s
+     JOIN roles r ON s.role_id = r.role_id
+     WHERE s.step_id = ?`,
+    [step_id]
+  );
+  return rows[0];
+}
+
+/** แก้ไขขั้นตอน */
+async function updateStep(step_id, step_order, role_id, step_name) {
+  await db.query(
+    `UPDATE approval_steps 
+     SET step_order = ?, role_id = ?, step_name = ?
+     WHERE step_id = ?`,
+    [step_order, role_id, step_name, step_id]
+  );
+}
+
+/** ลบขั้นตอนเดียว */
+async function deleteStep(step_id) {
+  await db.query(`DELETE FROM approval_steps WHERE step_id = ?`, [step_id]);
+}
+
 module.exports = {
   createStep,
   getStepsByFlow,
-  deleteStepsByFlow
+  deleteStepsByFlow,
+  getStepById,
+  updateStep,
+  deleteStep
 };

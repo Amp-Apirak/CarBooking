@@ -25,3 +25,18 @@ exports.createRole = async (role) => {
     name,
   ]);
 };
+
+exports.updateRole = async (role_id, role) => {
+  const { name } = role;
+  
+  if (!name) throw new Error("Missing 'name' field");
+
+  await db.query("UPDATE roles SET name = ? WHERE role_id = ?", [
+    name,
+    role_id,
+  ]);
+};
+
+exports.deleteRole = async (role_id) => {
+  await db.query("DELETE FROM roles WHERE role_id = ?", [role_id]);
+};
