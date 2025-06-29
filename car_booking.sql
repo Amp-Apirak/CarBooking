@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 29, 2025 at 06:43 AM
+-- Generation Time: Jun 29, 2025 at 12:12 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -52,6 +52,13 @@ CREATE TABLE `approval_flows` (
   `is_active` tinyint(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `approval_flows`
+--
+
+INSERT INTO `approval_flows` (`flow_id`, `flow_name`, `flow_description`, `is_active`) VALUES
+('2c9cd21bd64b4447af7cb1c8cc03c31b', 'อนุมัติทั่วไป 3 ลำดับขั้น', 'อนุมัติทั่วไป 3 ลำดับขั้น เห็นชอบโดย สท. >> อนุมัติขั้นแรงโดย ปลัด,รองปลัด >> อนุมัติขั้นสุดท้าย นายก, รองนายก ', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -65,6 +72,15 @@ CREATE TABLE `approval_steps` (
   `role_id` char(32) DEFAULT NULL,
   `step_name` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `approval_steps`
+--
+
+INSERT INTO `approval_steps` (`step_id`, `flow_id`, `step_order`, `role_id`, `step_name`) VALUES
+('64fee3bdec5b438c99ae4d536e413b5f', '2c9cd21bd64b4447af7cb1c8cc03c31b', 1, 'ac171b33817c4b889666abe978e11baa', 'ผู้อนุมัติระดับ 1'),
+('9efd17f10547414d92f2feaed636c17b', '2c9cd21bd64b4447af7cb1c8cc03c31b', 2, '7d8729453319497eb7630914179975b4', 'ผู้อนุมัติระดับ 2'),
+('a76e0c9eacb94dfc873063c6b8e6f6e8', '2c9cd21bd64b4447af7cb1c8cc03c31b', 3, '0527b784f86b49a9b3e80084e9cf7ce5', 'ผู้อนุมัติระดับ 3');
 
 -- --------------------------------------------------------
 
@@ -167,6 +183,14 @@ CREATE TABLE `drivers` (
   `created_at` timestamp NULL DEFAULT current_timestamp() COMMENT 'วันที่เพิ่มพนักงานขับรถ'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลพนักงานขับรถ';
 
+--
+-- Dumping data for table `drivers`
+--
+
+INSERT INTO `drivers` (`driver_id`, `name`, `phone`, `created_at`) VALUES
+('3b1f8a7c5d9e2f6a4c8b0d1e3f5a7c9d', 'Somchai Driver', '0812345678', '2025-06-29 09:54:58'),
+('550e8400e29b41d4a716446655440000', 'Anucha Driver', '0898765432', '2025-06-29 09:54:58');
+
 -- --------------------------------------------------------
 
 --
@@ -179,6 +203,17 @@ CREATE TABLE `equipments` (
   `description` varchar(254) NOT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp() COMMENT 'วันที่สร้างรายการอุปกรณ์'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='ตารางเก็บข้อมูลอุปกรณ์เสริม';
+
+--
+-- Dumping data for table `equipments`
+--
+
+INSERT INTO `equipments` (`equipment_id`, `equipment_name`, `description`, `created_at`) VALUES
+('1dde628980ae46069b7b9d53a1ef5783', 'ลำโพง', 'เครื่องขยายเสียง ไมค์ลำโพง', '2025-06-29 09:48:39'),
+('4af6247464854d3abbcbb71d1626ebc7', 'GPS Navigatort', 'เครื่องระบุตำแหน่ง', '2025-06-29 09:48:14'),
+('b6073afe518a4097ad284540dd7751df', 'กล้องติดรถยนต์', 'บันทึกภาพขณะขับขี่', '2025-06-29 09:47:36'),
+('cf1a00334c224a7bb4d4cb6dbaec72a7', 'Baby Seat', 'เบาะนั่งเด็ก', '2025-06-29 09:48:00'),
+('e12446199cd44846b3d13da411aed69b', 'น้ำมัน', 'น้ำมันสำรอง (เป็นกะร่อน)', '2025-06-29 09:49:06');
 
 -- --------------------------------------------------------
 
@@ -258,14 +293,18 @@ CREATE TABLE `refresh_tokens` (
 --
 
 INSERT INTO `refresh_tokens` (`token_id`, `user_id`, `token_hash`, `expired_at`, `revoked_at`, `created_at`) VALUES
+('056eab07-ac32-4ce3-ba97-48fc5e2d59f0', '036354d67ec34f9eb28cd26c8b2ec26e', 'ebb2787b9439023f6f78a82d1050da95050565d17ff6aa17efec8e70c9d3c17d', '2025-07-06 05:02:58', NULL, '2025-06-29 05:02:58'),
 ('2a32af64-380c-4ba8-b58c-c22b9e28b963', '8b06d87178544b52b9269eafc89c4cb0', '31adad82e5ad885527590e64bc4e22c09b7873ca60e3744993d96c8539674429', '2025-07-05 16:15:10', NULL, '2025-06-28 16:15:10'),
 ('332548de-5752-4c7a-b10a-850be9bbc64a', '036354d67ec34f9eb28cd26c8b2ec26e', 'd804e56d887c12cd65f6f21e36df8d83adae20e7436d0e8b13f3011823ae5e34', '2025-07-05 15:49:54', NULL, '2025-06-28 15:49:54'),
 ('6af44aca-79c1-4fb5-92f3-1c93a6d4092b', '036354d67ec34f9eb28cd26c8b2ec26e', 'a9521b8d1ba3df0181bed085bc700fd44a6522ec2ac40a38b2edd5828080c9f2', '2025-07-05 16:08:55', NULL, '2025-06-28 16:08:55'),
 ('716e4fef-bd7f-4b5e-a58c-d561b41fbe44', 'f9591a0215794225b088d53b6d2ef37d', '030e78a415f0b3e3e8c929d62745f36d6b1c98d74d0fb16258aeea2a01386662', '2025-07-05 16:14:53', NULL, '2025-06-28 16:14:53'),
 ('779e1034-81a3-4d8b-891d-98985368e2d4', 'f31524fdbb9f4460b7c5f80fda33cf08', '5aa89304378ef45052c42a24eb5083c2a1561dd3031b15c5f9e312241085e5f6', '2025-07-05 16:14:13', NULL, '2025-06-28 16:14:13'),
+('953b10a6-b927-4529-9b62-7de74ee33b56', 'cd257e3d337941e5ac61f5ea9de99e92', '21b724b78da5d7621f9fb12b31219ce91b01199f1569530079fab676390f5968', '2025-07-06 05:03:21', NULL, '2025-06-29 05:03:21'),
+('a09cb443-6eea-4b60-bfad-385fdb28ca0a', '036354d67ec34f9eb28cd26c8b2ec26e', 'c0a008b333fa5b4ad651b2d8994850b38741b6cb3f4c06e0486687795a2d7b45', '2025-07-06 05:02:41', NULL, '2025-06-29 05:02:41'),
 ('bd2c77bd-cf27-4ff6-9bb8-f400843d99da', 'aadaec379b964a44ac33896816f752ad', 'fe2e99d428ea85aaed75e903143024aec2c8a4edb848f0cffc735b20ca2c9c72', '2025-07-05 16:14:22', NULL, '2025-06-28 16:14:22'),
 ('cb65206b-5bea-4c78-ae69-0d5e737e4b89', '5ed0cce547ea4898aca5ee633449c2fb', 'c6532139a289aca1874014f59641d187abc3282c09e5ef672583db10739fb994', '2025-07-05 16:13:17', NULL, '2025-06-28 16:13:17'),
 ('e10479fa-7a0f-4609-b5b1-d1e2298a8fa0', '3699f1ea64684ac78b02afd1fb9b3cdd', 'b528c6f1fc385464c80998cdf67223301e4bf20f3c398b52f2ec439d750e57c7', '2025-07-05 16:14:02', NULL, '2025-06-28 16:14:02'),
+('eca08e39-9a76-4fb5-bd33-efee42216498', '036354d67ec34f9eb28cd26c8b2ec26e', 'd92b3bb6df15007cea2bda1e2f58bebaac654c4f2e5a354c511619e2e13a3e99', '2025-07-06 09:46:46', NULL, '2025-06-29 09:46:46'),
 ('eef46306-bc9d-437c-852c-cfc2a8cfb6cc', '036354d67ec34f9eb28cd26c8b2ec26e', '30e4734af342c5ba261b12bc6b09f511eeace0b11eaf964d22671d5e115929fc', '2025-07-06 03:48:23', NULL, '2025-06-29 03:48:23'),
 ('f3bac213-8f21-4028-bfc6-37fb7dd27193', '036354d67ec34f9eb28cd26c8b2ec26e', '1486bdc2552858bde5b349ec323394217393795ff55c12d149014e4badfb1404', '2025-07-05 15:43:14', NULL, '2025-06-28 15:43:14');
 
@@ -286,10 +325,12 @@ CREATE TABLE `roles` (
 --
 
 INSERT INTO `roles` (`role_id`, `name`, `created_at`) VALUES
+('0527b784f86b49a9b3e80084e9cf7ce5', 'approve level3', '2025-06-29 10:05:50'),
 ('5e600f16228846a59f512dcda88b1fc0', 'admin', '2025-06-28 16:00:40'),
 ('687e5497bfdc447da1e6e4d98827b46c', 'staff', '2025-06-28 16:00:56'),
+('7d8729453319497eb7630914179975b4', 'approve level2', '2025-06-29 10:05:44'),
 ('850f38dc62364a8ca0adadce762a46b5', 'manager', '2025-06-28 16:00:49'),
-('ac171b33817c4b889666abe978e11baa', 'approve', '2025-06-28 16:01:07');
+('ac171b33817c4b889666abe978e11baa', 'approve level1', '2025-06-28 16:01:07');
 
 -- --------------------------------------------------------
 
@@ -313,8 +354,12 @@ INSERT INTO `role_permissions` (`role_permission_id`, `role_id`, `permission_id`
 ('6b66c835f4784b808e72168ff7aaad82', 'ac171b33817c4b889666abe978e11baa', 'f0789ee3639f421d8c3a1131dd90423d', '2025-06-28 16:11:21'),
 ('6c52f9ede5ae4c49a583f1d29b671aef', 'ac171b33817c4b889666abe978e11baa', '6f6caa1d4d764e02b3ad938420d53bde', '2025-06-28 16:11:15'),
 ('6dc555cac66448588366b57f802d21f7', '850f38dc62364a8ca0adadce762a46b5', 'db208d5446734211b6f01c92cabf5f8e', '2025-06-28 16:10:38'),
+('711c026af130496f9667ff61591bb71c', '0527b784f86b49a9b3e80084e9cf7ce5', 'f0789ee3639f421d8c3a1131dd90423d', '2025-06-29 10:07:12'),
 ('9bd6da43bf63492e8f719a2c3573bba2', '850f38dc62364a8ca0adadce762a46b5', 'f0789ee3639f421d8c3a1131dd90423d', '2025-06-28 16:10:23'),
+('9dfbbf29841441fb8867a6f287b54316', '7d8729453319497eb7630914179975b4', 'f0789ee3639f421d8c3a1131dd90423d', '2025-06-29 10:06:54'),
 ('bdf455fbc6874f8698db92a506e6e192', '5e600f16228846a59f512dcda88b1fc0', 'db208d5446734211b6f01c92cabf5f8e', '2025-06-28 16:09:51'),
+('eee8c1853580498fa79aae99a6287e19', '7d8729453319497eb7630914179975b4', '6f6caa1d4d764e02b3ad938420d53bde', '2025-06-29 10:07:59'),
+('efecfbf0b136419eaac8b716a972ff04', '0527b784f86b49a9b3e80084e9cf7ce5', '6f6caa1d4d764e02b3ad938420d53bde', '2025-06-29 10:07:43'),
 ('f099dec316a1441cbffcd71308da881b', '5e600f16228846a59f512dcda88b1fc0', '6f6caa1d4d764e02b3ad938420d53bde', '2025-06-28 16:09:45');
 
 -- --------------------------------------------------------
@@ -354,6 +399,7 @@ INSERT INTO `users` (`user_id`, `username`, `email`, `password`, `first_name`, `
 ('5ed0cce547ea4898aca5ee633449c2fb', 'manager', 'manager@example.com', '$2b$10$BKg8rwgxgRJCR6yBxB1GheSABCjdD/5lGwCBwF4f/lZgPbb9mBtqe', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'bf4f9c05543611f097453417ebbed40a', 'active', '2025-06-28 16:13:17', NULL),
 ('8b06d87178544b52b9269eafc89c4cb0', 'staff_two', 'staff_two@example.com', '$2b$10$QM5UHLDfzzXPtxdidxdq7.QoE/go6.skRr9LcU8nthwqVCSIHddta', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'd6149e48543811f097453417ebbed40a', 'active', '2025-06-28 16:15:10', NULL),
 ('aadaec379b964a44ac33896816f752ad', 'approve_tree', 'approve_tree@example.com', '$2b$10$TjRr6GYuYLa1rPWIsrZvH.d3NzGMNJZNH4saItXzUmr571X0/tFrW', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'bf4f9c05543611f097453417ebbed40a', 'active', '2025-06-28 16:14:22', NULL),
+('cd257e3d337941e5ac61f5ea9de99e92', 'testuser', 'test@example.com', '$2b$10$8WSiP3Pdf9E64Avdyg4ua.nDMMGMZHf9UiWZi/MItcGt1YtQmB9ku', 'ทดสอบ', 'โมเดล', 'other', '1234567890123', '0812345678', '123/4 ถ.ทดสอบ', 'Thailand', 'Bangkok', '10200', NULL, '2e950612491a11f08b210242ac120002', 'active', '2025-06-29 04:58:01', NULL),
 ('f31524fdbb9f4460b7c5f80fda33cf08', 'approve_two', 'approve_two@example.com', '$2b$10$1Pa56mRTUNTwhJEfz09iGOkXH2.motGkC/ywzWwZyu509UnujRp52', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'bf4f9c05543611f097453417ebbed40a', 'active', '2025-06-28 16:14:13', NULL),
 ('f9591a0215794225b088d53b6d2ef37d', 'staff_one', 'staff_one@example.com', '$2b$10$aIP0lKPI/3KsHnVdC0kO3OSdYtsOBBf8GZMBCIiotzEElESr1qQuK', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'bf515beb543711f097453417ebbed40a', 'active', '2025-06-28 16:14:53', NULL);
 

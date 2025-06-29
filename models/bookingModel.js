@@ -40,7 +40,7 @@ async function createBooking(data) {
       start_date, start_time, end_date, end_time,
       origin_location, destination_location,
       start_odometer, end_odometer, total_distance, status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`; 
   const totalDistance = data.end_odometer - data.start_odometer;
   const params = [
     id,
